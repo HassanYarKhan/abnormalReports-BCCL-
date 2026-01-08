@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irregular Trip Duration Reports</title>
+    <link rel="stylesheet" href="./abnormalTrips.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div class="nav-item active" onclick="switchTab('summary')">
+                Summary Reports
+            </div>
+            <div class="nav-item" onclick="switchTab('do-wise')">
+                Unit-Wise Reports
+            </div>
+        </div>
+
+        <!-- Summary Reports Tab -->
+        <div id="summary" class="tab-content active">
+            <!-- Summary Navigation Tabs -->
+            <div class="summary-tabs">
+                <button class="summary-tab active" data-target="dailySummary">
+                    Daily Summary
+                </button>
+                <button class="summary-tab" data-target="weeklySummary">
+                    Weekly Summary
+                </button>
+                <button class="summary-tab" data-target="monthlySummary">
+                    Monthly Summary
+                </button>
+                <button class="summary-tab" data-target="customSummary">
+                    Custom Range
+                </button>
+            </div>
+
+            <!-- Summary Tab Content -->
+            <div class="summary-tab-content">
+                <!-- Daily Summary Section -->
+                <section id="dailySummary" class="summary-section active">
+                    <div class="summary-content">
+                        <div class="summary-stats">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                        <div id="dailySummaryTable" class="summary-table">
+                            <!-- Table will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Weekly Summary Section -->
+                <section id="weeklySummary" class="summary-section">
+                    <div class="summary-content">
+                        <div class="summary-stats">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                        <div id="weeklySummaryTable" class="summary-table">
+                            <!-- Table will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Monthly Summary Section -->
+                <section id="monthlySummary" class="summary-section">
+                    <div class="summary-content">
+                        <div class="summary-stats">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                        <div id="monthlySummaryTable" class="summary-table">
+                            <!-- Table will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Custom Range Summary Section -->
+                <section id="customSummary" class="summary-section">
+                    <div class="summary-content">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <div class="filter-item">
+                                    <label for="custom-from-date">From Date</label>
+                                    <input type="datetime-local" id="custom-from-date" />
+                                </div>
+                                <div class="filter-item">
+                                    <label for="custom-to-date">To Date</label>
+                                    <input type="datetime-local" id="custom-to-date" />
+                                </div>
+                                <div class="button-container">
+                                    <button class="search-btn" onclick="loadCustomRangeSummary()">Generate
+                                        Summary</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="summary-stats">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                        <div id="customSummaryTable" class="summary-table">
+                            <!-- Table will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Unit-Wise Reports Tab -->
+        <div id="do-wise" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label for="do-area-select">Area</label>
+                        <select id="do-area-select" onchange="fetchUnitCodeFromAreaCode()">
+                            <option value="default">Select Area</option>
+                            <option value="CO01">Barka Sayal</option>
+                            <option value="CO02">Argada</option>
+                            <option value="CO03">North Karanpura</option>
+                            <option value="CO04">Bokaro and Kargali</option>
+                            <option value="CO05">Kathara</option>
+                            <option value="CO06">Magadh and Sanghamitra</option>
+                            <option value="CO07">Amrapali and Chandragupta</option>
+                            <option value="CO08">Rajhara</option>
+                            <option value="CO09">Kuju</option>
+                            <option value="CO10">Hazaribagh</option>
+                            <option value="CO11">Rajrappa</option>
+                            <option value="CO12">Dhori</option>
+                            <option value="CO13">Piparwar</option>
+                            <option value="CO14">Giridih</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="do-unit-select">Unit</label>
+                        <select id="do-unit-select">
+                            <option value="">Select Unit</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="from-date">From Date</label>
+                        <input type="datetime-local" id="from-date" />
+                    </div>
+                    <div class="filter-item">
+                        <label for="to-date">To Date</label>
+                        <input type="datetime-local" id="to-date" />
+                    </div>
+                    <div class="button-container">
+                        <button class="search-btn" onclick="searchTripReports()">Search</button>
+                        <button class="search-btn export-btn" onclick="exportTripReportPDF()">Export PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="trip-report-header"
+                    style="display: none; margin-bottom: 16px; padding: 12px 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <div style="text-align: center; margin-bottom: 12px;">
+                        <h3
+                            style="font-size: 18px; color: #000000; margin: 0; font-weight: 600; letter-spacing: 0.5px;">
+                        </h3>
+                    </div>
+                    <div class="summary-stats" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                        <div class="stat-item" style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Total Trips</div>
+                            <div id="totalTrips"
+                                style="text-align: center; font-size: 24px; font-weight: 600; color: #2196F3;">-</div>
+                        </div>
+                        <div class="stat-item" style="text-align: center !important;">
+                            <div style="font-size: 14px; color: #666;">Unique DOs</div>
+                            <div id="uniqueDOs" style="font-size: 24px; font-weight: 600; color: #2196F3;">-</div>
+                        </div>
+                        <div class="stat-item" style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Unique Vehicles</div>
+                            <div id="uniqueVehicles" style="font-size: 24px; font-weight: 600; color: #2196F3;">-</div>
+                        </div>
+                        <div class="stat-item" style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Total Trip Deviations</div>
+                            <div id="totalOutliers" style="font-size: 24px; font-weight: 600; color: #f44336;">-</div>
+                        </div>
+                        <div class="stat-item" style="text-align: center;">
+                            <div style="font-size: 14px; color: #666;">Trip Time Deviation Rate</div>
+                            <div id="outlierPercentage" style="font-size: 24px; font-weight: 600; color: #ff9800;">-
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <tbody id="trip-data">
+                        <tr>
+                            <td colspan="10">
+                                <div class="no-data">
+                                    Please select area, unit and date range to view reports
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CRITICAL: Load jsPDF libraries FIRST before your custom scripts -->
+    <script src="./vendor/jspdf.umd.min.js"></script>
+    <script src="./vendor/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    <script src="./exportTripReport.js"></script>
+    <script src="./graphView.js"></script>
+    <script src="./abnormalTrips.js"></script>
+    <script src="./tripReportsSummary.js"></script>
+
+    <script>
+        // Force load summary on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            // Ensure summary tab content is active
+            const summaryTab = document.getElementById('summary');
+            const doWiseTab = document.getElementById('do-wise');
+
+            if (summaryTab) summaryTab.classList.add('active');
+            if (doWiseTab) doWiseTab.classList.remove('active');
+
+            // Ensure summary nav item has active styling
+            const summaryNavItem = document.querySelector('.nav-item[onclick="switchTab(\'summary\')"]');
+            const doWiseNavItem = document.querySelector('.nav-item[onclick="switchTab(\'do-wise\')"]');
+
+            if (summaryNavItem) summaryNavItem.classList.add('active');
+            if (doWiseNavItem) doWiseNavItem.classList.remove('active');
+
+            // Trigger summary load if module is ready
+            if (window.tripReportsSummary && typeof window.tripReportsSummary.loadDailySummary === 'function') {
+                window.tripReportsSummary.loadDailySummary();
+            }
+        });
+    </script>
+</body>
+
+</html>

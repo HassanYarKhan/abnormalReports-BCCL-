@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Irregular Weighment Reports</title>
+  <link rel="stylesheet" href="./abnormalWeighments.css">
+  <link rel="stylesheet" href="./export.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="navbar">
+      <div class="nav-item active" onclick="switchTab('summary')">
+        Summary
+      </div>
+      <div class="nav-item" onclick="switchTab('present-day')">
+        Area-Wise Reports
+      </div>
+      <div class="nav-item" onclick="switchTab('weighbridge-wise')">
+        Weighbridge-wise Reports
+      </div>
+      <div class="nav-item" onclick="switchTab('vehicle-wise')">
+        Vehicle-wise Reports
+      </div>
+    </div>
+
+    <!-- Area-Wise Reports Tab -->
+    <div id="present-day" class="tab-content">
+      <div class="filters">
+        <div class="filter-group">
+          <div class="filter-item">
+            <label for="present-day-area-select">Area</label>
+            <select id="present-day-area-select">
+              <option value="default">Select Area</option>
+              <option value="CO01">Barka Sayal</option>
+              <option value="CO02">Argada</option>
+              <option value="CO03">North Karanpura</option>
+              <option value="CO04">Bokaro and Kargali</option>
+              <option value="CO05">Kathara</option>
+              <option value="CO06">Magadh and Sanghamitra</option>
+              <option value="CO07">Amrapali and Chandragupta</option>
+              <option value="CO08">Rajhara</option>
+              <option value="CO09">Kuju</option>
+              <option value="CO10">Hazaribagh</option>
+              <option value="CO11">Rajrappa</option>
+              <option value="CO12">Dhori</option>
+              <option value="CO13">Piparwar</option>
+              <option value="CO14">Giridih</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label for="present-day-from-date">From Date</label>
+            <input type="date" id="present-day-from-date" />
+          </div>
+          <div class="filter-item">
+            <label for="present-day-to-date">To Date</label>
+            <input type="date" id="present-day-to-date" />
+          </div>
+          <div class="filter-item">
+            <label for="std-deviation">Std. Deviation (%)</label>
+            <input type="number" id="std-deviation-areawise" 
+            step="0.1" min="5" max="30"
+            placeholder="Standard Deviation"
+            value="10" />
+          </div>
+          <div class="filter-item">
+            <label for="weight-unit-selector">Weight Unit</label>
+            <select id="weight-unit-selector">
+              <option value="kg">kg</option>
+              <option value="MT" selected>MT</option>
+            </select>
+          </div>
+          <button class="search-btn" onclick="getReportsByAreaId()">
+            Search
+          </button>
+          <button class="search-btn refresh-btn" onclick="refreshPresentDayData()">
+            Refresh
+          </button>
+          <div style="margin-left:auto; display:flex; align-items:flex-end;">
+            <button class="search-btn export-btn" onclick="exportAreaReportPDF(this)">Export PDF</button>
+          </div>
+        </div>
+
+        <div class="search-container">
+          <label for="present-day-search" style="
+                font-weight: 500;
+                color: #616161;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              ">Quick Filter (Area/Unit/WB/Vehicle)</label>
+          <input type="text" id="present-day-search" class="search-input" placeholder="Type to filter results..."
+            autocomplete="off" oninput="filterPresentDayDataAsYouType()" />
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div id="present-day-report-header"
+          style="display: none; margin-bottom: 16px; padding: 12px 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center;">
+          <h3 style="font-size: 18px; color: #000000; margin: 0; font-weight: 600; letter-spacing: 0.5px;"></h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="area-cell">AREA</th>
+              <th class="unit-cell">UNIT</th>
+              <th class="wb-cell">WB</th>
+              <th class="vehicle-cell">VEHICLE #</th>
+              <th class="numeric-cell">AVG. TARE</th>
+              <th class="numeric-cell">AVG. GROSS</th>
+              <th class="numeric-cell">TARE WT.</th>
+              <th class="numeric-cell">GROSS WT.</th>
+              <th class="tare-deviation-cell">TARE DEV.</th>
+              <th class="gross-deviation-cell">GROSS DEV.</th>
+              <th class="date-cell">Date In</th>
+              <th class="date-cell">Date Out</th>
+              <th class="image-cell">View</th>
+              <!-- <th class="remarks-cell">Tare Remarks</th>
+              <th class="remarks-cell">Gross Remarks</th> -->
+            </tr>
+          </thead>
+          <tbody id="present-day-data"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Vehicle-wise Reports Tab -->
+    <div id="vehicle-wise" class="tab-content">
+      <div class="filters">
+        <div class="filter-group">
+          <div class="filter-item">
+            <label for="vehicle-search">Vehicle Number</label>
+            <div class="search-dropdown">
+              <input type="text" id="vehicle-search" placeholder="Type to search vehicle number" autocomplete="off" />
+              <div class="dropdown-options" id="vehicle-dropdown"></div>
+            </div>
+          </div>
+          <div class="filter-item">
+            <label for="from-date">From Date</label>
+            <input type="datetime-local" id="from-date" />
+          </div>
+          <div class="filter-item">
+            <label for="to-date">To Date</label>
+            <input type="datetime-local" id="to-date" />
+          </div>
+          <div class="filter-item">
+            <label for="std-deviation">Std. Deviation (%)</label>
+            <input type="number" id="std-deviation-vehiclewise" 
+            step="0.1" min="5" max="30"
+            placeholder="Standard Deviation"
+            value="10" />
+          </div>
+          <div class="filter-item">
+            <label for="weight-unit-selector-vehicle">Weight Unit</label>
+            <select id="weight-unit-selector-vehicle">
+              <option value="kg">kg</option>
+              <option value="MT" selected>MT</option>
+            </select>
+          </div>
+          <button class="search-btn" onclick="filterVehicleData()">
+            Search
+          </button>
+          <div style="margin-left:auto; display:flex; align-items:flex-end;">
+            <button class="search-btn export-btn" onclick="exportVehicleReportPDF(this)">Export PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div id="vehicle-report-header"
+          style="display: none; margin-bottom: 16px; padding: 12px 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center;">
+          <h3 style="font-size: 18px; color: #000000; margin: 0; font-weight: 600; letter-spacing: 0.5px;"></h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="area-cell">Area</th>
+              <th class="unit-cell">Unit</th>
+              <th class="wb-cell">WB</th>
+              <th class="numeric-cell">Avg Tare</th>
+              <th class="numeric-cell">Avg Gross</th>
+              <th class="numeric-cell">Tare Wt.</th>
+              <th class="numeric-cell">Gross Wt.</th>
+              <th class="tare-deviation-cell">Tare Dev.</th>
+              <th class="gross-deviation-cell">Gross Dev.</th>
+              <th class="date-cell">Date In</th>
+              <th class="date-cell">Date Out</th>
+              <th class="image-cell">View</th>
+            </tr>
+          </thead>
+          <tbody id="vehicle-wise-data">
+            <tr>
+              <td class="no-data" colspan="10">
+                Please select a vehicle and date range to view reports
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Weighbridge-wise Reports Tab -->
+    <div id="weighbridge-wise" class="tab-content">
+      <div class="filters">
+        <div class="filter-group">
+          <div class="filter-item">
+            <label for="area-select">Area</label>
+            <select id="area-select" onchange="fetchUnitCodeFromAreaCode()">
+              <option value="default">Select Area</option>
+              <option value="CO01">Barka Sayal</option>
+              <option value="CO02">Argada</option>
+              <option value="CO03">North Karanpura</option>
+              <option value="CO04">Bokaro and Kargali</option>
+              <option value="CO05">Kathara</option>
+              <option value="CO06">Magadh and Sanghamitra</option>
+              <option value="CO07">Amrapali and Chandragupta</option>
+              <option value="CO08">Rajhara</option>
+              <option value="CO09">Kuju</option>
+              <option value="CO10">Hazaribagh</option>
+              <option value="CO11">Rajrappa</option>
+              <option value="CO12">Dhori</option>
+              <option value="CO13">Piparwar</option>
+              <option value="CO14">Giridih</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label for="unit-select">Unit</label>
+            <select id="unit-select" onchange="fetchWBCodeFromUnitCode()">
+              <option value="">Select Unit</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label for="wb-select">Weighbridge</label>
+            <select id="wb-select">
+              <option value="">Select Weighbridge</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label for="wb-from-date">From Date</label>
+            <input type="datetime-local" id="wb-from-date" />
+          </div>
+          <div class="filter-item">
+            <label for="wb-to-date">To Date</label>
+            <input type="datetime-local" id="wb-to-date" />
+          </div>
+         <div class="filter-item">
+            <label for="std-deviation">Std. Deviation (%)</label>
+            <input type="number" id="std-deviation-wbwise" 
+            step="0.1" min="5" max="30"
+            placeholder="Standard Deviation"
+            value="10" />
+          </div>
+          <div class="filter-item">
+            <label for="weight-unit-selector-wb">Weight Unit</label>
+            <select id="weight-unit-selector-wb">
+              <option value="kg">kg</option>
+              <option value="MT" selected>MT</option>
+            </select>
+          </div>
+          <button class="search-btn" onclick="getReportsByWBCode()">
+            Search
+          </button>
+          <div style="margin-left:auto; display:flex; align-items:flex-end;">
+            <button class="search-btn export-btn" onclick="exportWeighbridgeReportPDF(this)">Export PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div id="weighbridge-report-header"
+          style="display: none; margin-bottom: 16px; padding: 12px 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center;">
+          <h3 style="font-size: 18px; color: #000000; margin: 0; font-weight: 600; letter-spacing: 0.5px;"></h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="vehicle-cell">Vehicle</th>
+              <th class="numeric-cell">Avg Tare</th>
+              <th class="numeric-cell">Avg Gross</th>
+              <th class="numeric-cell">Tare</th>
+              <th class="numeric-cell">Gross</th>
+              <th class="deviation-cell">Tare Deviation</th>
+              <th class="deviation-cell">Gross Deviation</th>
+              <th class="dateTime-cell">Date In</th>
+              <th class="dateTime-cell">Date Out</th>
+              <th class="image-cell">View</th>
+            </tr>
+          </thead>
+          <tbody id="weighbridge-wise-data">
+            <tr>
+              <td class="no-data" colspan="11">
+                Please select a weighbridge and date range to view reports
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Summary Tab -->
+    <div id="summary" class="tab-content active">
+      <div class="summary-container">
+        <!-- Summary Navigation Tabs -->
+        <div class="summary-tabs">
+          <button class="summary-tab-btn active" data-tab="daily">Daily Summary</button>
+          <button class="summary-tab-btn" data-tab="weekly">Weekly Summary</button>
+          <button class="summary-tab-btn" data-tab="monthly">Monthly Summary</button>
+          <button class="summary-tab-btn" data-tab="custom">Custom Range</button>
+        </div>
+
+        <!-- Daily Section -->
+        <div class="timeframe-section summary-tab-content active" data-tab-content="daily">
+
+          <div class="stddev-display-container">
+            <span class="stddev-display-label">Standard Deviation Threshold:</span>
+            <span class="stddev-display-value">10.0%</span>
+            <button class="stddev-edit-btn" onclick="showStdDevEditor()" title="Configure Standard Deviation">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Violations Overview Section -->
+          <div class="summary-container">
+            <div class="stats-grid">
+              <div class="stat-card violation-card total-violations-card" data-daily-total-violations>
+                <div class="stat-detail">
+                  <span class="stat-label">Abnormal Deviations (Today):</span>
+                  <span class="stat-number loading-state">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Main Sections Container -->
+          <div class="main-sections-container">
+            <!-- Areas Section -->
+            <div class="summary-container">
+              <!-- <div class="section-header">
+                <h4 class="section-title">Areas</h4>
+              </div> -->
+              <div class="stats-grid">
+                <!-- Areas with Violations Card -->
+                <div class="stat-card violation-card areas-violations-card" data-daily-areas-violations>
+                  <!-- <h4>Areas with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Areas:</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-daily-area-card>
+                  <h4>Area with Most Deviations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">Area:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weighbridges Section -->
+            <div class="summary-container">
+              <!-- <div class="section-header">
+                <h4 class="section-title">Weighbridges</h4>
+              </div> -->
+              <div class="stats-grid">
+                <!-- Weighbridges with Violations Card -->
+                <div class="stat-card violation-card wb-violations-card" data-daily-wb-violations>
+                  <!-- <h4>WBs with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighbridges:</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-daily-wb-card>
+                  <h4>WB with Most Violations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">WB:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+             <!-- Vehicles Section -->
+            <div class="summary-container">
+              <!-- <div class="section-header">
+                <h4 class="section-title">Vehicles</h4>
+              </div> -->
+              <div class="stats-grid">
+                <!-- Vehicles with Violations Card -->
+                <div class="stat-card violation-card vehicles-violations-card" data-daily-vehicles-violations>
+                  <!-- <h4>Vehicles with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Vehicles:</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-daily-vehicle-card>
+                  <h4>Vehicle with Most Violations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">Vehicle Number:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Section  -->
+        <div class="timeframe-section summary-tab-content" data-tab-content="weekly">
+          <div class="stddev-display-container">
+            <span class="stddev-display-label">Standard Deviation Threshold:</span>
+            <span class="stddev-display-value">10.0%</span>
+            <button class="stddev-edit-btn" onclick="showStdDevEditor()" title="Configure Standard Deviation">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Violations Overview Section -->
+          <div class="summary-container">
+            <!-- <div class="section-header">
+              <h4 class="section-title">Overview</h4>
+            </div> -->
+            <div class="stats-grid">
+              <!-- Total Violations Card -->
+              <div class="stat-card violation-card total-violations-card" data-weekly-total-violations>
+                <!-- <h4>Total Violations</h4> -->
+                <div class="stat-detail">
+                  <span class="stat-label">Abnormal Deviations (This Week):</span>
+                  <span class="stat-number loading-state">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Sections Container (Horizontal Layout) -->
+          <div class="main-sections-container">
+            <!-- Areas Section -->
+            <div class="summary-container">
+              <div class="stats-grid">
+                <!-- Areas with Violations Card -->
+                <div class="stat-card violation-card areas-violations-card" data-weekly-areas-violations>
+                  <!-- <h4>Areas with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Areas :</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-weekly-area-card>
+                  <h4>Areas with Most Deviations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">Area:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weighbridges Section -->
+            <div class="summary-container">
+              <div class="section-header">
+                <!-- <h4 class="section-title">Weighbridges</h4> -->
+              </div>
+              <div class="stats-grid">
+                <!-- Weighbridges with Violations Card -->
+                <div class="stat-card violation-card wb-violations-card" data-weekly-wb-violations>
+                  <!-- <h4>WBs with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighbridges:</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-weekly-wb-card>
+                  <h4>WB with Most Deviations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">WB:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vehicles Section -->
+            <div class="summary-container">
+              <div class="stats-grid">
+                <!-- Vehicles with Violations Card -->
+                <div class="stat-card violation-card vehicles-violations-card" data-weekly-vehicles-violations>
+                  <!-- <h4>Vehicles with Violations</h4> -->
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Vehicles:</span>
+                    <span class="stat-number loading-state">--</span>
+                  </div>
+                </div>
+
+                <div class="stat-card stat-high" data-weekly-vehicle-card>
+                  <h4>Vehicle with Most Deviations</h4>
+                  <div class="stat-detail">
+                    <span class="stat-label">Vehicle Number:</span>
+                    <span class="stat-number primary-stat"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Total Weighments:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Tare Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                  <div class="stat-detail">
+                    <span class="stat-label">Gross Violations:</span>
+                    <span class="stat-number"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Section -->
+        <div class="timeframe-section summary-tab-content" data-tab-content="monthly">
+          <div class="stddev-display-container">
+            <span class="stddev-display-label">Standard Deviation Threshold:</span>
+            <span class="stddev-display-value">10.0%</span>
+            <button class="stddev-edit-btn" onclick="showStdDevEditor()" title="Configure Standard Deviation">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="summary-container">
+            <!-- <div class="section-header"><h4 class="section-title">Overview</h4></div> -->
+            <div class="stats-grid">
+              <div class="stat-card violation-card total-violations-card" data-monthly-total-violations>
+                <!-- <h4>Total Violations</h4> -->
+                <div class="stat-detail">
+                  <span class="stat-label">Abnormal Deviations (This Month):</span>
+                  <span class="stat-number loading-state">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="main-sections-container">
+            <div class="summary-container">
+              <div class="stats-grid">
+                <div class="stat-card violation-card areas-violations-card" data-monthly-areas-violations>
+                  <div class="stat-detail"><span class="stat-label">Areas :</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-monthly-area-card>
+                  <h4>Area with Most Deviations</h4>
+                  <div class="stat-detail"><span class="stat-label">Area:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="summary-container">
+              <!-- <div class="section-header"><h4 class="section-title">Weighbridges</h4></div> -->
+              <div class="stats-grid">
+                <div class="stat-card violation-card wb-violations-card" data-monthly-wb-violations>
+                  <!-- <h4>WBs with Violations</h4> -->
+                  <div class="stat-detail"><span class="stat-label">Total Weighbridges:</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-monthly-wb-card>
+                  <h4>WB with Most Violations</h4>
+                  <div class="stat-detail"><span class="stat-label">WB:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="summary-container">
+              <!-- <div class="section-header"><h4 class="section-title">Vehicles</h4></div> -->
+              <div class="stats-grid">
+                <div class="stat-card violation-card vehicles-violations-card" data-monthly-vehicles-violations>
+                  <!-- <h4>Vehicles with Deviations</h4> -->
+                  <div class="stat-detail"><span class="stat-label">Total Vehicles:</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-monthly-vehicle-card>
+                  <h4>Vehicle with Most Deviations</h4>
+                  <div class="stat-detail"><span class="stat-label">Vehicle Number:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Section -->
+        <div class="timeframe-section summary-tab-content" data-tab-content="custom" style="display: none;">
+          <div class="stddev-display-container">
+            <span class="stddev-display-label">Standard Deviation Threshold:</span>
+            <span class="stddev-display-value">10.0%</span>
+            <button class="stddev-edit-btn" onclick="showStdDevEditor()" title="Configure Standard Deviation">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="date-filter-container">
+            <div class="filter-row">
+              <div class="date-input-group">
+                <label class="date-input-label">From Date</label>
+                <input type="datetime-local" class="date-input" id="fromDate" value="2025-08-01T00:00">
+              </div>
+              <div class="date-input-group">
+                <label class="date-input-label">To Date</label>
+                <input type="datetime-local" class="date-input" id="toDate" value="2025-08-15T23:59">
+              </div>
+              <button class="search-button" onclick="searchCustomRange()">Search</button>
+            </div>
+          </div>
+          <div class="summary-container">
+            <!-- <div class="section-header"><h4 class="section-title">Overview</h4></div> -->
+            <div class="stats-grid">
+              <div class="stat-card violation-card total-violations-card" data-custom-total-violations>
+                <!-- <h4>Total Violations</h4> -->
+                <div class="stat-detail">
+                  <span class="stat-label">Abnormal Deviations in Period:</span>
+                  <span class="stat-number loading-state">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="main-sections-container">
+            <div class="summary-container">
+              <!-- <div class="section-header"><h4 class="section-title">Areas</h4></div> -->
+              <div class="stats-grid">
+                <div class="stat-card violation-card areas-violations-card" data-custom-areas-violations>
+                  <!-- <h4>Total Areas</h4> -->
+                  <div class="stat-detail"><span class="stat-label">Total Areas:</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-custom-area-card>
+                  <h4>Area with Most Deviations</h4>
+                  <div class="stat-detail"><span class="stat-label">Area:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="summary-container">
+              <!-- <div class="section-header"><h4 class="section-title">Weighbridges</h4></div> -->
+              <div class="stats-grid">
+                <div class="stat-card violation-card wb-violations-card" data-custom-wb-violations>
+                  <!-- <h4>WBs with Most Deviations</h4> -->
+                  <div class="stat-detail"><span class="stat-label">Unique Weighbridges:</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-custom-wb-card>
+                  <h4>WB with Most Violations</h4>
+                  <div class="stat-detail"><span class="stat-label">WB:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+             <div class="summary-container">
+              <!-- <div class="section-header"><h4 class="section-title">Vehicles</h4></div> -->
+              <div class="stats-grid">
+                <div class="stat-card violation-card vehicles-violations-card" data-custom-vehicles-violations>
+                  <!-- <h4>Vehicles with Most Deviations</h4> -->
+                  <div class="stat-detail"><span class="stat-label">Unique Vehicles:</span><span
+                      class="stat-number loading-state">--</span></div>
+                </div>
+                <div class="stat-card stat-high" data-custom-vehicle-card>
+                  <h4>Vehicle with Most Deviations</h4>
+                  <div class="stat-detail"><span class="stat-label">Vehicle Number:</span><span
+                      class="stat-number primary-stat"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Total Weighments:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Tare Violations:</span><span
+                      class="stat-number"></span></div>
+                  <div class="stat-detail"><span class="stat-label">Gross Violations:</span><span
+                      class="stat-number"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="summary-note" id="dateRangeDisplay"></p>
+        </div>
+      </div>
+    </div>
+
+    <!---IMAGES MODAL--->
+    <div id="image-modal" class="image-modal-overlay"></div>
+    <!-- PDF Libraries (local copies in /public/vendor). Place actual files there. -->
+    <script src="./vendor/jspdf.umd.min.js"></script>
+    <script src="./vendor/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="./exportPDF.js?v=1.0"></script>
+    <script src="./abnormalWeighments.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+/* export.css - minor styling for export buttons */
+.export-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background .2s ease;
+  min-height: 36px;
+}
+.export-btn:hover { background:#1565c0; }
+.export-btn:active { background:#0d47a1; }
+.export-btn.export-loading { position:relative; opacity:0.75; }
+.export-btn.export-loading:after {
+  content:'';
+  position:absolute;
+  right:10px; top:50%; width:14px; height:14px;
+  margin-top:-7px; border:2px solid rgba(255,255,255,0.6);
+  border-top-color:#fff; border-radius:50%;
+  animation: export-spin 0.7s linear infinite;
+}
+@keyframes export-spin { to { transform: rotate(360deg);} }
+/* Keep layout tidy when buttons pushed to right */
+.filter-group { gap: 12px; }
