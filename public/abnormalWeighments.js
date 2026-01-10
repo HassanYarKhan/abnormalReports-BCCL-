@@ -2,21 +2,20 @@ const serverURL = "http://localhost:8500";
 // const serverURL = "https://abnrpt.cclai.in/";
 const EMPTY_OUT_TOLERANCE = 1000; // in kgs
 const areaCodeMap = {
-  CO01: "Barka Sayal",
-  CO02: "Argada",
-  CO03: "NK Area",
-  CO04: "B&K Area",
-  CO05: "Kathara",
-  CO06: "MS Area",
-  CO07: "Amrapali and Chandragupta",
-  CO08: "Rajhara",
-  CO09: "Kuju",
-  CO10: "Hazaribagh",
-  CO11: "Rajrappa",
-  CO12: "Dhori",
-  CO13: "Piparwar",
-  CO15: "Giridih",
-};
+    2002: "Barora",
+    2005: "Block II",
+    2007: "Govindpur",
+    2014: "Katras",
+    2018: "Sijua",
+    2025: "Kusunda",
+    2033: "PB",
+    2036: "Bastacolla",
+    2043: "Lodna",
+    2045: "EJ",
+    2048: "CV",
+    2051: "WJ",
+    2060: "Washery Division"
+};;
 
 // ========================================
 // Chart Instances

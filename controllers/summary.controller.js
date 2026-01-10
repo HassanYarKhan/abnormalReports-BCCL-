@@ -6,9 +6,10 @@ async function getVehicleWiseSummary(req, res) {
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
-  
+
   try {
-    const dbResponse = await dbInstanceRFID.query(`
+    const dbResponse = await dbInstanceRFID.query(
+      `
       WITH ViolationData AS (
         SELECT 
           V_NO,
@@ -16,33 +17,41 @@ async function getVehicleWiseSummary(req, res) {
           UNIT,
           CASE WHEN ABS(
             CASE 
-              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                   OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                 ((CASE 
-                  WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT 
-                  WHEN W_TYPE = 'J' THEN SECOND_WT 
+                  WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2))
+                  WHEN W_TYPE = 'J' THEN CAST(SECOND_WT AS DECIMAL(18,2))
                 END) 
-                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
               ELSE 0
             END) > :standardDeviation THEN 1 ELSE 0 END AS TARE_VIOLATION,
           CASE 
-            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) = 
-                 (CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) THEN 0
+            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) = 
+                 (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) THEN 0
             WHEN ABS(
               CASE 
-                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                     OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                   ((CASE 
-                    WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT 
-                    WHEN W_TYPE = 'J' THEN FIRST_WT 
+                    WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2))
+                    WHEN W_TYPE = 'J' THEN CAST(FIRST_WT AS DECIMAL(18,2))
                   END) 
-                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
                 ELSE 0
               END) > :standardDeviation THEN 1 
             ELSE 0 
           END AS GROSS_VIOLATION
         FROM [special25] 
-        WHERE DATE_OUT >= :from AND DATE_OUT <= :to
+        WHERE DATE_OUT IS NOT NULL
+          AND DATE_OUT >= CAST(:from AS DATE)
+          AND DATE_OUT <= CAST(:to AS DATE)
       )
       SELECT TOP 5
         V_NO,
@@ -56,41 +65,45 @@ async function getVehicleWiseSummary(req, res) {
       GROUP BY V_NO, AREA_CODE, UNIT
       HAVING SUM(TARE_VIOLATION + GROSS_VIOLATION) > 0
       ORDER BY TOTAL_VIOLATIONS DESC, V_NO
-    `, {
-      replacements: { from, to, standardDeviation },
-      type: dbInstanceRFID.QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { from, to, standardDeviation },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
 
     if (dbResponse.length === 0) {
-      return res.status(200).json({ message: "No records found for this time frame" });
+      return res
+        .status(200)
+        .json({ message: "No records found for this time frame" });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       data: dbResponse,
       summary: {
         totalVehicles: dbResponse.length,
-        period: { from, to }
-      }
+        period: { from, to },
+      },
     });
-
   } catch (error) {
     console.log("Failed to fetch vehicle data:", error);
-    return res.status(500).json({ 
-      message: "Failed to fetch vehicle data", 
-      error: error.message 
+    return res.status(500).json({
+      message: "Failed to fetch vehicle data",
+      error: error.message,
     });
   }
 }
 
 async function getWeighbridgeWiseSummary(req, res) {
   const { from, to, standardDeviation } = req.query;
-  console.log(req.query);
+  //console.log(req.query);
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
-  
+
   try {
-    const dbResponse = await dbInstanceRFID.query(`
+    const dbResponse = await dbInstanceRFID.query(
+      `
       WITH ViolationData AS (
         SELECT 
           WB_CODE,
@@ -99,33 +112,41 @@ async function getWeighbridgeWiseSummary(req, res) {
           V_NO,
           CASE WHEN ABS(
             CASE 
-              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                   OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                 ((CASE 
-                  WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT 
-                  WHEN W_TYPE = 'J' THEN SECOND_WT 
+                  WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2))
+                  WHEN W_TYPE = 'J' THEN CAST(SECOND_WT AS DECIMAL(18,2))
                 END) 
-                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
               ELSE 0
             END) > :standardDeviation THEN 1 ELSE 0 END AS TARE_VIOLATION,
           CASE 
-            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) = 
-                 (CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) THEN 0
+            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) = 
+                 (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) THEN 0
             WHEN ABS(
               CASE 
-                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                     OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                   ((CASE 
-                    WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT 
-                    WHEN W_TYPE = 'J' THEN FIRST_WT 
+                    WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2))
+                    WHEN W_TYPE = 'J' THEN CAST(FIRST_WT AS DECIMAL(18,2))
                   END) 
-                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
                 ELSE 0
               END) > :standardDeviation THEN 1 
             ELSE 0 
           END AS GROSS_VIOLATION
         FROM [special25] 
-        WHERE DATE_OUT >= :from AND DATE_OUT <= :to
+        WHERE DATE_OUT IS NOT NULL
+          AND DATE_OUT >= CAST(:from AS DATE)
+          AND DATE_OUT <= CAST(:to AS DATE)
       )
       SELECT TOP 5
         vd.WB_CODE,
@@ -142,28 +163,31 @@ async function getWeighbridgeWiseSummary(req, res) {
       GROUP BY vd.WB_CODE, w.WBNAME, vd.AREA_CODE, vd.UNIT
       HAVING SUM(vd.TARE_VIOLATION + vd.GROSS_VIOLATION) > 0
       ORDER BY TOTAL_VIOLATIONS DESC, vd.WB_CODE
-    `, {
-      replacements: { from, to, standardDeviation },
-      type: dbInstanceRFID.QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { from, to, standardDeviation },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
 
     if (dbResponse.length === 0) {
-      return res.status(200).json({ message: "No records found for this time frame" });
+      return res
+        .status(200)
+        .json({ message: "No records found for this time frame" });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       data: dbResponse,
       summary: {
         totalWeighbridges: dbResponse.length,
-        period: { from, to }
-      }
+        period: { from, to },
+      },
     });
-
   } catch (error) {
     console.log("Failed to fetch weighbridge data:", error);
-    return res.status(500).json({ 
-      message: "Failed to fetch weighbridge data", 
-      error: error.message 
+    return res.status(500).json({
+      message: "Failed to fetch weighbridge data",
+      error: error.message,
     });
   }
 }
@@ -173,9 +197,10 @@ async function getAreaWiseSummary(req, res) {
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
-  
+
   try {
-    const dbResponse = await dbInstanceRFID.query(`
+    const dbResponse = await dbInstanceRFID.query(
+      `
       WITH ViolationData AS (
         SELECT 
           AREA_CODE,
@@ -183,33 +208,41 @@ async function getAreaWiseSummary(req, res) {
           WB_CODE,
           CASE WHEN ABS(
             CASE 
-              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                   OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                 ((CASE 
-                  WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT 
-                  WHEN W_TYPE = 'J' THEN SECOND_WT 
+                  WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2))
+                  WHEN W_TYPE = 'J' THEN CAST(SECOND_WT AS DECIMAL(18,2))
                 END) 
-                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
               ELSE 0
             END) > :standardDeviation THEN 1 ELSE 0 END AS TARE_VIOLATION,
           CASE 
-            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) = 
-                 (CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) THEN 0
+            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) = 
+                 (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) THEN 0
             WHEN ABS(
               CASE 
-                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                     OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                   ((CASE 
-                    WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT 
-                    WHEN W_TYPE = 'J' THEN FIRST_WT 
+                    WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2))
+                    WHEN W_TYPE = 'J' THEN CAST(FIRST_WT AS DECIMAL(18,2))
                   END) 
-                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
                 ELSE 0
               END) > :standardDeviation THEN 1 
             ELSE 0 
           END AS GROSS_VIOLATION
         FROM [special25] 
-        WHERE DATE_OUT >= :from AND DATE_OUT <= :to
+        WHERE DATE_OUT IS NOT NULL
+          AND DATE_OUT >= CAST(:from AS DATE)
+          AND DATE_OUT <= CAST(:to AS DATE)
       )
       SELECT TOP 5
         AREA_CODE,
@@ -223,39 +256,43 @@ async function getAreaWiseSummary(req, res) {
       GROUP BY AREA_CODE
       HAVING SUM(TARE_VIOLATION + GROSS_VIOLATION) > 0
       ORDER BY TOTAL_VIOLATIONS DESC, AREA_CODE
-    `, {
-      replacements: { from, to, standardDeviation },
-      type: dbInstanceRFID.QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { from, to, standardDeviation },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
 
     if (dbResponse.length === 0) {
-      return res.status(200).json({ message: "No records found for this time frame" });
+      return res
+        .status(200)
+        .json({ message: "No records found for this time frame" });
     }
-    console.log("Area-wise summary response:", dbResponse);
-    return res.status(200).json({ 
+    //console.log("Area-wise summary response:", dbResponse);
+    return res.status(200).json({
       data: dbResponse,
     });
-
   } catch (error) {
     console.log("Failed to fetch area data:", error);
-    return res.status(500).json({ 
-      message: "Failed to fetch area data", 
-      error: error.message 
+    return res.status(500).json({
+      message: "Failed to fetch area data",
+      error: error.message,
     });
   }
 }
 
 async function getViolationSummary(req, res) {
-  const { from, to, type = 'all', standardDeviation } = req.query;
+  const { from, to, type = "all", standardDeviation } = req.query;
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
-  
+
   try {
     const summary = {};
-    
-    if (type === 'all' || type === 'vehicles') {
-      const violationQuery = await dbInstanceRFID.query(`
+
+    if (type === "all" || type === "vehicles") {
+      const violationQuery = await dbInstanceRFID.query(
+        `
         WITH ViolationData AS (
         SELECT 
           V_NO,
@@ -263,33 +300,41 @@ async function getViolationSummary(req, res) {
           AREA_CODE,
           CASE WHEN ABS(
             CASE 
-              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+              WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                   OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                 ((CASE 
-                  WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT 
-                  WHEN W_TYPE = 'J' THEN SECOND_WT 
+                  WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2))
+                  WHEN W_TYPE = 'J' THEN CAST(SECOND_WT AS DECIMAL(18,2))
                 END) 
-                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) 
+                  OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
               ELSE 0
             END) > :standardDeviation THEN 1 ELSE 0 END AS TARE_VIOLATION,
           CASE 
-            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN FIRST_WT ELSE SECOND_WT END) = 
-                 (CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) THEN 0
+            WHEN (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(FIRST_WT AS DECIMAL(18,2)) ELSE CAST(SECOND_WT AS DECIMAL(18,2)) END) = 
+                 (CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) THEN 0
             WHEN ABS(
               CASE 
-                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
+                WHEN AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                     OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) > 0 THEN
                   ((CASE 
-                    WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT 
-                    WHEN W_TYPE = 'J' THEN FIRST_WT 
+                    WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2))
+                    WHEN W_TYPE = 'J' THEN CAST(FIRST_WT AS DECIMAL(18,2))
                   END) 
-                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
-                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN SECOND_WT ELSE FIRST_WT END) OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
+                  - AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO)) 
+                  / AVG(CASE WHEN W_TYPE IN ('S', 'I') THEN CAST(SECOND_WT AS DECIMAL(18,2)) ELSE CAST(FIRST_WT AS DECIMAL(18,2)) END) 
+                    OVER (PARTITION BY AREA_CODE, UNIT, WB_CODE, V_NO) * 100
                 ELSE 0
               END) > :standardDeviation THEN 1 
             ELSE 0 
           END AS GROSS_VIOLATION
         FROM [special25] 
-        WHERE DATE_OUT >= :from AND DATE_OUT <= :to
+        WHERE DATE_OUT IS NOT NULL
+          AND DATE_OUT >= CAST(:from AS DATE)
+          AND DATE_OUT <= CAST(:to AS DATE)
       ),
       ViolationRecords AS (
         SELECT 
@@ -314,28 +359,32 @@ async function getViolationSummary(req, res) {
         -- 4. Unique number of areas with violations
         COUNT(DISTINCT AREA_CODE) AS unique_areas_with_violations
       FROM ViolationRecords
-      `, {
-        replacements: { from, to, standardDeviation },
-        type: dbInstanceRFID.QueryTypes.SELECT,
-      });
-      
+      `,
+        {
+          replacements: { from, to, standardDeviation },
+          type: dbInstanceRFID.QueryTypes.SELECT,
+        }
+      );
+
       summary.violations = {
         total_violations: violationQuery[0].total_violations || 0,
-        unique_vehicles_with_violations: violationQuery[0].unique_vehicles_with_violations || 0,
-        unique_weighbridges_with_violations: violationQuery[0].unique_weighbridges_with_violations || 0,
-        unique_areas_with_violations: violationQuery[0].unique_areas_with_violations || 0
+        unique_vehicles_with_violations:
+          violationQuery[0].unique_vehicles_with_violations || 0,
+        unique_weighbridges_with_violations:
+          violationQuery[0].unique_weighbridges_with_violations || 0,
+        unique_areas_with_violations:
+          violationQuery[0].unique_areas_with_violations || 0,
       };
     }
-    
-    return res.status(200).json({ 
+
+    return res.status(200).json({
       summary,
     });
-
   } catch (error) {
     console.log("Failed to fetch violation summary:", error);
-    return res.status(500).json({ 
-      message: "Failed to fetch violation summary", 
-      error: error.message 
+    return res.status(500).json({
+      message: "Failed to fetch violation summary",
+      error: error.message,
     });
   }
 }
@@ -446,15 +495,17 @@ async function getTotalTripViolationSummary(req, res) {
       {
         replacements: {
           fromDate: from,
-          toDate: to
+          toDate: to,
         },
-        type: dbInstanceRFID.QueryTypes.SELECT
+        type: dbInstanceRFID.QueryTypes.SELECT,
       }
     );
 
     // Check if query returned results
     if (!dbResponse || dbResponse.length === 0) {
-      return res.status(404).json({ message: "No data found for the specified date range" });
+      return res
+        .status(404)
+        .json({ message: "No data found for the specified date range" });
     }
 
     // Extract the single row result
@@ -475,23 +526,22 @@ async function getTotalTripViolationSummary(req, res) {
         Total_Unique_DOs: result.Total_Unique_DOs,
         DOs_With_Violations: result.DOs_With_Violations,
         Total_Unique_Units: result.Total_Unique_Units,
-        Units_With_Violations: result.Units_With_Violations
-      }
+        Units_With_Violations: result.Units_With_Violations,
+      },
     });
-
   } catch (error) {
     console.error("Error fetching trip violation summary:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 }
 
 async function getVehicleWiseTripSummary(req, res) {
   const { from, to } = req.query;
-  
+
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
@@ -642,40 +692,41 @@ async function getVehicleWiseTripSummary(req, res) {
       {
         replacements: {
           fromDate: from,
-          toDate: to
+          toDate: to,
         },
-        type: dbInstanceRFID.QueryTypes.SELECT
+        type: dbInstanceRFID.QueryTypes.SELECT,
       }
     );
 
     if (!dbResponse || dbResponse.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "No vehicle violations found for the specified date range" 
+        message: "No vehicle violations found for the specified date range",
       });
     }
 
-    console.log(`Fetched ${dbResponse.length} vehicle-wise trip records from database`);
+    console.log(
+      `Fetched ${dbResponse.length} vehicle-wise trip records from database`
+    );
 
     return res.status(200).json({
       success: true,
       count: dbResponse.length,
-      data: dbResponse
+      data: dbResponse,
     });
-
   } catch (error) {
     console.error("Error fetching vehicle-wise trip summary:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 }
 
 async function getDOWiseTripSummary(req, res) {
   const { from, to } = req.query;
-  
+
   if (!from || !to) {
     return res.status(400).json({ message: "From and To dates are required" });
   }
@@ -860,33 +911,34 @@ async function getDOWiseTripSummary(req, res) {
       {
         replacements: {
           fromDate: from,
-          toDate: to
+          toDate: to,
         },
-        type: dbInstanceRFID.QueryTypes.SELECT
+        type: dbInstanceRFID.QueryTypes.SELECT,
       }
     );
 
     if (!dbResponse || dbResponse.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "No DO violations found for the specified date range" 
+        message: "No DO violations found for the specified date range",
       });
     }
 
-    console.log(`Fetched ${dbResponse.length} DO-wise trip records from database`);
+    console.log(
+      `Fetched ${dbResponse.length} DO-wise trip records from database`
+    );
 
     return res.status(200).json({
       success: true,
       count: dbResponse.length,
-      data: dbResponse
+      data: dbResponse,
     });
-
   } catch (error) {
     console.error("Error fetching DO-wise trip summary:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 }
@@ -899,5 +951,5 @@ export {
   getTotalTripViolationSummary,
   getDateRanges,
   getVehicleWiseTripSummary,
-  getDOWiseTripSummary
+  getDOWiseTripSummary,
 };

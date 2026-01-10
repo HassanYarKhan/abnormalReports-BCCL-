@@ -4,7 +4,7 @@ async function getDONumberFromUnitCode(req, res) {
    
   const { unitCode, fromDate, toDate } = req.query;
 
-  console.log(`request received for unitCode: ${unitCode}, fromDate: ${fromDate}, toDate: ${toDate}`);
+  //console.log(`request received for unitCode: ${unitCode}, fromDate: ${fromDate}, toDate: ${toDate}`);
 
   if (!unitCode || !fromDate || !toDate) {
     return res.status(400).json({ 
@@ -16,7 +16,7 @@ async function getDONumberFromUnitCode(req, res) {
   const fromFormatted = new Date(fromDate).toISOString().split('T')[0];
   const toFormatted = new Date(toDate).toISOString().split('T')[0];
 
-  console.log(`Fetching DO numbers for Unit: ${unitCode}, From: ${fromFormatted}, To: ${toFormatted}`);
+  //console.log(`Fetching DO numbers for Unit: ${unitCode}, From: ${fromFormatted}, To: ${toFormatted}`);
 
   try {
     const dbResponse = await dbInstanceRFID.query(
