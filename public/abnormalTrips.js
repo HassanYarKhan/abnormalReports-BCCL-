@@ -536,13 +536,13 @@ function renderTableView(doNumber, doData) {
         <div style="font-size: 0.9em;">${trip.Dest_Area}</div>
       </div>
     </td>
-   <td>
+    <td>
       <div style="line-height: 1.4;">
         <div>${formatDateTime(trip.Trip_Start_Time)
           .split(" ")
           .slice(0, 2)
           .join(" ")}</div>
-        <div style="font-size: 0.9em; color: #666;">${
+        <div style="font-size: 0.9em; color: #d8d8d8;">${
           formatDateTime(trip.Trip_Start_Time).split(" ")[2]
         }</div>
       </div>
@@ -553,7 +553,7 @@ function renderTableView(doNumber, doData) {
           .split(" ")
           .slice(0, 2)
           .join(" ")}</div>
-        <div style="font-size: 0.9em; color: #666;">${
+        <div style="font-size: 0.9em; color: #d8d8d8;">${
           formatDateTime(trip.Trip_End_Time).split(" ")[2]
         }</div>
       </div>

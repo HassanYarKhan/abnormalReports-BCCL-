@@ -327,16 +327,16 @@ function renderGraph(doNumber, doData, outliersOnly = false) {
             display: true,
             text: "Trip Sequence",
             font: { size: 14, weight: "bold" },
-            color: "#1f2937",
+            color: "#d8d8d8",
             padding: { top: 10 }
           },
           grid: {
             display: true,
-            color: "rgba(0, 0, 0, 0.05)",
+            color: "rgba(255, 255, 255, 0.05)",
             drawBorder: true,
           },
           ticks: {
-            color: "#6b7280",
+            color: "#b8b8b8",
             font: { size: 11 },
             padding: 8,
             maxRotation: 0,
@@ -352,16 +352,16 @@ function renderGraph(doNumber, doData, outliersOnly = false) {
             display: true,
             text: "Trip Time (minutes)",
             font: { size: 14, weight: "bold" },
-            color: "#1f2937",
+            color: "#d8d8d8",
             padding: { bottom: 10 }
           },
           grid: {
             display: true,
-            color: "rgba(0, 0, 0, 0.1)",
+            color: "rgba(255, 255, 255, 0.1)",
             drawBorder: true,
           },
           ticks: {
-            color: "#6b7280",
+            color: "#b8b8b8",
             font: { size: 11 },
             padding: 8,
             callback: function(value, index, values) {

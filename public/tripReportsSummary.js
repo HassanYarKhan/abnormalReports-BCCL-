@@ -330,15 +330,15 @@ const tripReportsSummary = {
     let customControls = "";
     if (isCustomRange) {
       customControls = `
-        <div class="custom-range-controls" style="margin-bottom: 24px; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+        <div class="custom-range-controls" style="margin-bottom: 24px; padding: 20px; background: #35363a; border-radius: 8px;">
           <div style="display: flex; gap: 16px; align-items: end; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 200px;">
-              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">From Date</label>
-              <input type="datetime-local" id="custom-from-date" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 8px; color: #e3e3e3; font-weight: 500;">From Date</label>
+              <input type="datetime-local" id="custom-from-date" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #444444; border-radius: 4px; background: #2b2c29; color: #e3e3e3;">
             </div>
             <div style="flex: 1; min-width: 200px;">
-              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">To Date</label>
-              <input type="datetime-local" id="custom-to-date" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <label style="display: block; margin-bottom: 8px; color: #e3e3e3; font-weight: 500;">To Date</label>
+              <input type="datetime-local" id="custom-to-date" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #444444; border-radius: 4px; background: #2b2c29; color: #e3e3e3;">
             </div>
             <div>
               <button onclick="loadCustomRangeSummary()" class="search-btn" style="padding: 10px 24px;">
@@ -353,8 +353,8 @@ const tripReportsSummary = {
     content.innerHTML = `
       ${customControls}
       <div class="summary-header" style="margin-bottom: 24px;">
-        <h2 style="font-size: 24px; color: #1976d2; margin-bottom: 8px;">${title}</h2>
-        <p style="color: #757575; font-size: 14px;">
+        <h2 style="font-size: 24px; color: #7ec8ff; margin-bottom: 8px;">${title}</h2>
+        <p style="color: #d8d8d8; font-size: 14px;">
           ${this.formatDate(data.dateRange.from)} - ${this.formatDate(
       data.dateRange.to
     )}
@@ -530,25 +530,25 @@ const tripReportsSummary = {
     if (!vehicleData || vehicleData.length === 0) {
       return `
         <div class="summary-table" style="margin-top: 24px;">
-          <h3 style="font-size: 18px; color: #333; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
-          <p style="color: #757575; padding: 20px; text-align: center;">No trip deviations found</p>
+          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
+          <p style="color: #d8d8d8; padding: 20px; text-align: center;">No trip deviations found</p>
         </div>
       `;
     }
 
     return `
       <div class="summary-table" style="margin-top: 24px;">
-        <h3 style="font-size: 18px; color: #333; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
+        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
         <table class="data-table">
           <thead>
             <tr>
-              <th style="text-align: left;">Vehicle Number</th>
-              <th style="text-align: center;">Unit</th>
-              <th style="text-align: center;">DO Number</th>
-              <th style="text-align: center;">Irregular Trips</th>
-              <th style="text-align: left;">Source</th>
-              <th style="text-align: left;">Destination</th>
-              <th style="text-align: center;">Action</th>
+              <th style="text-align: left; color: #e3e3e3;">Vehicle Number</th>
+              <th style="text-align: center; color: #e3e3e3;">Unit</th>
+              <th style="text-align: center; color: #e3e3e3;">DO Number</th>
+              <th style="text-align: center; color: #e3e3e3;">Irregular Trips</th>
+              <th style="text-align: left; color: #e3e3e3;">Source</th>
+              <th style="text-align: left; color: #e3e3e3;">Destination</th>
+              <th style="text-align: center; color: #e3e3e3;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -556,25 +556,25 @@ const tripReportsSummary = {
               .map(
                 (vehicle) => `
               <tr>
-                <td style="text-align: left; font-weight: 500;">${
+                <td style="text-align: left; font-weight: 500; color: #e3e3e3;">${
                   vehicle.Vehicle_Number || "N/A"
                 }</td>
-                <td style="text-align: center;">${vehicle.Unit || "N/A"}</td>
-                <td style="text-align: center;">${
+                <td style="text-align: center; color: #e3e3e3;">${vehicle.Unit || "N/A"}</td>
+                <td style="text-align: center; color: #e3e3e3;">${
                   vehicle.DO_Number || "N/A"
                 }</td>
                 <td style="text-align: center; color: #d32f2f; font-weight: 500;">${
                   vehicle.Total_Violations || 0
                 }</td>
-                <td style="text-align: left; font-size: 12px;">
+                <td style="text-align: left; font-size: 12px; color: #e3e3e3;">
                   <div>${vehicle.Source_Area || "N/A"}</div>
-                  <div style="color: #757575;">WB: ${
+                  <div style="color: #d8d8d8;">WB: ${
                     vehicle.Source_Weighbridge || "N/A"
                   }</div>
                 </td>
-                <td style="text-align: left; font-size: 12px;">
+                <td style="text-align: left; font-size: 12px; color: #e3e3e3;">
                   <div>${vehicle.Destination_Area || "N/A"}</div>
-                  <div style="color: #757575;">WB: ${
+                  <div style="color: #d8d8d8;">WB: ${
                     vehicle.Destination_Weighbridge || "N/A"
                   }</div>
                 </td>
@@ -591,7 +591,7 @@ const tripReportsSummary = {
                     title="View Records"
                   >
                     <svg 
-                      fill="#1976d2" 
+                      fill="#7ec8ff" 
                       width="20px" 
                       height="20px" 
                       viewBox="0 0 24 24" 
@@ -601,7 +601,7 @@ const tripReportsSummary = {
                         <path d="M18.44,3.06H5.56a2.507,2.507,0,0,0-2.5,2.5V18.44a2.507,2.507,0,0,0,2.5,2.5H18.44a2.514,2.514,0,0,0,2.5-2.5V5.56A2.514,2.514,0,0,0,18.44,3.06ZM8.71,19.94H5.56a1.5,1.5,0,0,1-1.5-1.5V15.33H8.71Zm0-5.61H4.06V9.67H8.71Zm0-5.66H4.06V5.56a1.5,1.5,0,0,1,1.5-1.5H8.71Zm11.23,9.77a1.511,1.511,0,0,1-1.5,1.5H9.71V15.33H19.94Zm0-4.11H9.71V9.67H19.94Zm0-5.66H9.71V4.06h8.73a1.511,1.511,0,0,1,1.5,1.5Z"></path>
                       </g>
                     </svg>
-                    <span style="font-weight: 300; font-style: italic; font-size: 12px; color: #1976d2;">
+                    <span style="font-weight: 300; font-style: italic; font-size: 12px; color: #7ec8ff;">
                       View records
                     </span>
                   </div>
@@ -621,25 +621,25 @@ const tripReportsSummary = {
     if (!doData || doData.length === 0) {
       return `
         <div class="summary-table" style="margin-top: 24px;">
-          <h3 style="font-size: 18px; color: #333; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
-          <p style="color: #757575; padding: 20px; text-align: center;">No trip time deviations found</p>
+          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
+          <p style="color: #d8d8d8; padding: 20px; text-align: center;">No trip time deviations found</p>
         </div>
       `;
     }
 
     return `
       <div class="summary-table" style="margin-top: 24px;">
-        <h3 style="font-size: 18px; color: #333; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
+        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
         <table class="data-table">
           <thead>
             <tr>
-              <th style="text-align: left;">DO Number</th>
-              <th style="text-align: center;">Unit</th>
-              <th style="text-align: center;">Irregular Trips</th>
-              <th style="text-align: center;"># Vehicles</th>
-              <th style="text-align: left;">Source</th>
-              <th style="text-align: left;">Destination</th>
-              <th style="text-align: center;">Action</th>
+              <th style="text-align: left; color: #e3e3e3;">DO Number</th>
+              <th style="text-align: center; color: #e3e3e3;">Unit</th>
+              <th style="text-align: center; color: #e3e3e3;">Irregular Trips</th>
+              <th style="text-align: center; color: #e3e3e3;"># Vehicles</th>
+              <th style="text-align: left; color: #e3e3e3;">Source</th>
+              <th style="text-align: left; color: #e3e3e3;">Destination</th>
+              <th style="text-align: center; color: #e3e3e3;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -647,27 +647,27 @@ const tripReportsSummary = {
               .map(
                 (doItem) => `
               <tr>
-                <td style="text-align: left; font-weight: 500;">${
+                <td style="text-align: left; font-weight: 500; color: #e3e3e3;">${
                   doItem.DO_Number || "N/A"
                 }</td>
-                <td style="text-align: center;">${
+                <td style="text-align: center; color: #e3e3e3;">${
                   doItem.Source_Unit || "N/A"
                 }</td>
                 <td style="text-align: center; color: #d32f2f; font-weight: 500;">${
                   doItem.Total_Violations || 0
                 }</td>
-                <td style="text-align: center;">${
+                <td style="text-align: center; color: #e3e3e3;">${
                   doItem.Unique_Vehicle_Count || 0
                 }</td>
-                <td style="text-align: left; font-size: 12px;">
+                <td style="text-align: left; font-size: 12px; color: #e3e3e3;">
                   <div>${doItem.Source_Area || "N/A"}</div>
-                  <div style="color: #757575;">WB: ${
+                  <div style="color: #d8d8d8;">WB: ${
                     doItem.Source_Weighbridge || "N/A"
                   }</div>
                 </td>
-                <td style="text-align: left; font-size: 12px;">
+                <td style="text-align: left; font-size: 12px; color: #e3e3e3;">
                   <div>${doItem.Destination_Area || "N/A"}</div>
-                  <div style="color: #757575;">WB: ${
+                  <div style="color: #d8d8d8;">WB: ${
                     doItem.Destination_Weighbridge || "N/A"
                   }</div>
                 </td>
@@ -683,7 +683,7 @@ const tripReportsSummary = {
                     title="View Records"
                   >
                     <svg 
-                      fill="#1976d2" 
+                      fill="#7ec8ff" 
                       width="20px" 
                       height="20px" 
                       viewBox="0 0 24 24" 
@@ -693,7 +693,7 @@ const tripReportsSummary = {
                         <path d="M18.44,3.06H5.56a2.507,2.507,0,0,0-2.5,2.5V18.44a2.507,2.507,0,0,0,2.5,2.5H18.44a2.514,2.514,0,0,0,2.5-2.5V5.56A2.514,2.514,0,0,0,18.44,3.06ZM8.71,19.94H5.56a1.5,1.5,0,0,1-1.5-1.5V15.33H8.71Zm0-5.61H4.06V9.67H8.71Zm0-5.66H4.06V5.56a1.5,1.5,0,0,1,1.5-1.5H8.71Zm11.23,9.77a1.511,1.511,0,0,1-1.5,1.5H9.71V15.33H19.94Zm0-4.11H9.71V9.67H19.94Zm0-5.66H9.71V4.06h8.73a1.511,1.511,0,0,1,1.5,1.5Z"></path>
                       </g>
                     </svg>
-                    <span style="font-weight: 300; font-style: italic; font-size: 12px; color: #1976d2;">
+                    <span style="font-weight: 300; font-style: italic; font-size: 12px; color: #7ec8ff;">
                       View records
                     </span>
                   </div>

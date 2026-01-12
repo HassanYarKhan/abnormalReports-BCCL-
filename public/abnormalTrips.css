@@ -598,7 +598,7 @@ body {
 
 .accordion-content td {
   padding: 0 !important;
-  background: #f9fafb;
+  background: #2b2c29;
   border-bottom: 2px solid #e5e7eb;
   overflow: visible;
 }
@@ -992,8 +992,8 @@ body {
 
 .trip-info-header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  border-bottom: 2px solid #0d47a1;
+  background: linear-gradient(135deg, #1a1a18 0%, #2b2c29 100%);
+  border-bottom: 2px solid #35363a;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1078,7 +1078,7 @@ body {
 }
 
 .trip-info-card-header svg {
-  color: #1976d2;
+  color: #7ec8ff;
   flex-shrink: 0;
 }
 
@@ -1088,7 +1088,7 @@ body {
 }
 
 .trip-info-table tr {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #444444;
 }
 
 .trip-info-table tr:last-child {
@@ -1188,7 +1188,7 @@ body {
   overflow-x: auto;
   overflow-y: auto;
   max-height: 600px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #444444;
   border-radius: 8px;
   margin: 24px;
 }
@@ -1199,16 +1199,16 @@ body {
 }
 
 .data-table-wrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #2b2c29;
 }
 
 .data-table-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
+  background: #7ec8ff;
   border-radius: 5px;
 }
 
 .data-table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+  background: #5db8ff;
 }
 
 .trips-detail-table {
@@ -1216,22 +1216,27 @@ body {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
+  background: #2b2c29;
 }
 
 .trips-detail-table thead {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: white;
+  background: #2b2c29;
+}
+
+.trips-detail-table tbody {
+  background: #2b2c29;
 }
 
 .trips-detail-table th {
-  background: #f5f5f5;
-  color: #616161;
+  background: #35363a;
+  color: #e3e3e3;
   padding: 12px 16px;
   text-align: left;
   font-weight: 500;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #444444;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1240,13 +1245,13 @@ body {
 
 .trips-detail-table td {
   padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  color: #333;
+  border-bottom: 1px solid #444444;
+  color: #e3e3e3;
   vertical-align: middle;
 }
 
 .trips-detail-table tr:hover {
-  background-color: #f9fafb;
+  background-color: #35363a;
 }
 
 /* Status badges in data table */
@@ -1633,7 +1638,7 @@ td.loading-spinner,
 td.no-data {
   text-align: center !important;
   padding: 40px 20px !important;
-  color: rgba(0, 0, 0, 0.6) !important;
+  color: #e3e3e3 !important;
   font-style: italic !important;
   vertical-align: middle !important;
 }
