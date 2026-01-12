@@ -2065,7 +2065,7 @@ async function getReportsByWBCode() {
   const fromDate = document.getElementById("wb-from-date").value;
   const toDate = document.getElementById("wb-to-date").value;
   const stdDevInput = document.getElementById("std-deviation-wbwise");
-  const stdDev = parseFloat(stdDevInput.value);
+const stdDev = parseFloat(stdDevInput.value);   
   const stdDevMin = parseFloat(stdDevInput.min);
   const stdDevMax = parseFloat(stdDevInput.max);
   const reportHeader = document.getElementById("weighbridge-report-header");

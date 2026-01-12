@@ -565,7 +565,7 @@ async function getVehicleWiseTripSummary(req, res) {
             CAST(CONCAT(r.DATE_IN, ' ', r.TIME_IN) AS datetime2)
           ) AS Trip_Seconds
         FROM dbo.special25 r WITH (NOLOCK)
-        INNER JOIN dbo.special25 s WITH (NOLOCK, INDEX(AK_SLNO25))
+        INNER JOIN dbo.special25 s WITH (NOLOCK)
           ON s.SL_NO = r.SRC_SLNO
         WHERE
           r.W_TYPE = 'J'
@@ -750,7 +750,7 @@ async function getDOWiseTripSummary(req, res) {
             CAST(CONCAT(r.DATE_IN, ' ', r.TIME_IN) AS datetime2)
           ) AS Trip_Seconds
         FROM dbo.special25 r WITH (NOLOCK)
-        INNER JOIN dbo.special25 s WITH (NOLOCK, INDEX(AK_SLNO25))
+        INNER JOIN dbo.special25 s WITH (NOLOCK)
           ON s.SL_NO = r.SRC_SLNO
         WHERE
           r.W_TYPE = 'J'
