@@ -128,13 +128,13 @@ ORDER BY s.AREA_CODE, s.UNIT, s.WB_CODE, s.DATE_OUT, s.TIME_OUT`,
           ? moment(entry.DATE_IN).format("DD-MM-YYYY")
           : null,
         timeIn: entry.TIME_IN
-          ? moment(entry.TIME_IN, "HH:mm:ss").format("h:mm:ss A")
+          ? moment(entry.TIME_IN, "HH:mm:ss", "HH:mm:ss").format("h:mm:ss A")
           : null,
         dateOut: entry.DATE_OUT
           ? moment(entry.DATE_OUT).format("DD-MM-YYYY")
           : null,
         timeOut: entry.TIME_OUT
-          ? moment(entry.TIME_OUT, "HH:mm:ss").format("h:mm:ss A")
+          ? moment(entry.TIME_OUT, "HH:mm:ss", "HH:mm:ss").format("h:mm:ss A")
           : null,
         tareDeviation: entry.TARE_DEVIATION_PERCENT,
         grossDeviation: entry.GROSS_DEVIATION_PERCENT,
@@ -328,10 +328,10 @@ ORDER BY
           ? moment(entry.DATE_OUT).format("DD-MM-YYYY")
           : null,
         timeIn: entry.TIME_IN
-          ? moment.utc(entry.TIME_IN).format("h:mm:ss A")
+          ? moment(entry.TIME_IN, "HH:mm:ss").format("h:mm:ss A")
           : null,
         timeOut: entry.TIME_OUT
-          ? moment.utc(entry.TIME_OUT).format("h:mm:ss A")
+          ? moment(entry.TIME_OUT, "HH:mm:ss").format("h:mm:ss A")
           : null,
         tareDeviation: entry.TARE_DEVIATION_PERCENT,
         grossDeviation: entry.GROSS_DEVIATION_PERCENT,
@@ -516,13 +516,13 @@ async function getReportsByWBCode(req, res) {
           ? moment(entry.DATE_IN).format("DD-MM-YYYY")
           : null,
         timeIn: entry.TIME_IN
-          ? moment(entry.TIME_IN, "HH:mm:ss").format("h:mm:ss A")
+          ? moment(entry.TIME_IN, "HH:mm:ss", "HH:mm:ss").format("h:mm:ss A")
           : null,
         dateOut: entry.DATE_OUT
           ? moment(entry.DATE_OUT).format("DD-MM-YYYY")
           : null,
         timeOut: entry.TIME_OUT
-          ? moment(entry.TIME_OUT, "HH:mm:ss").format("h:mm:ss A")
+          ? moment(entry.TIME_OUT, "HH:mm:ss", "HH:mm:ss").format("h:mm:ss A")
           : null,
         tareDeviation: entry.TARE_DEVIATION_PERCENT,
         grossDeviation: entry.GROSS_DEVIATION_PERCENT,
@@ -738,10 +738,10 @@ async function getReportsByAreaId(req, res) {
           ? moment(entry.DATE_OUT).format("DD-MM-YYYY")
           : null,
         timeIn: entry.TIME_IN
-          ? moment.utc(entry.TIME_IN).format("h:mm:ss A")
+          ? moment(entry.TIME_IN, "HH:mm:ss").format("h:mm:ss A")
           : null,
         timeOut: entry.TIME_OUT
-          ? moment.utc(entry.TIME_OUT).format("h:mm:ss A")
+          ? moment(entry.TIME_OUT, "HH:mm:ss").format("h:mm:ss A")
           : null,
         tareDeviation: entry.TARE_DEVIATION_PERCENT,
         grossDeviation: entry.GROSS_DEVIATION_PERCENT,

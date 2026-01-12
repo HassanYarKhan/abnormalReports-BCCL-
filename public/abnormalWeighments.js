@@ -1428,6 +1428,7 @@ function filterPresentDayData() {
 // Function to render present day table using actual deviation data from API
 function renderPresentDayTable(data, standardDeviation) {
   console.log(`rendering present day table - stdDev = ${standardDeviation}`);
+  console.log(data);
   const tableBody = document.getElementById("present-day-data");
 
   if (!data || data.length === 0) {
