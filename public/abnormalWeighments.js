@@ -626,7 +626,7 @@ async function loadWBReportsDirectly(wbCode, fromDateTime, toDateTime) {
           <td class="dateTime-cell">${record.dateIn} ${record.timeIn || ""}</td>
           <td class="dateTime-cell">${record.dateOut} ${record.timeOut || ""}</td>
           <td class="image-icon" onclick="loadWeighmentImages('${record.slNo}', '${record.weightType}')" style="cursor: pointer;" title="View Weighment Images">
-            <svg fill="#000000" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+            <svg fill="#e1e1e1" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
               <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
               <g id="SVGRepo_iconCarrier">
@@ -1252,7 +1252,7 @@ function renderVehicleWiseTable(data, standardDeviation) {
         <td class="date-cell">${record.dateIn} ${record.timeIn || ""}</td>
         <td class="date-cell">${record.dateOut} ${record.timeOut || ""}</td>
         <td class="image-icon" onclick="loadWeighmentImages('${record.slNo}', '${record.weightType}')" style="cursor: pointer;" title="View Weighment Images">
-          <svg fill="#000000" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+          <svg fill="#e1e1e1" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
             <g id="SVGRepo_iconCarrier">
@@ -1540,7 +1540,7 @@ function renderPresentDayTable(data, standardDeviation) {
       }">${tareViolations} of ${historyCount}</span>
       </div>
       <div class="stat-item-report">
-      <span class="stat-label">Gross Violations:</span>
+      <span class="stat-label-report">Gross Violations:</span>
       <span class="${
         grossViolations > 0 ? "violation-value" : "stat-value-report"
       }">${grossViolations} of ${historyCount}</span>
@@ -1599,7 +1599,7 @@ function renderPresentDayTable(data, standardDeviation) {
         }', '${
           record.weightType
         }')" style="cursor: pointer;" title="View Weighment Images">
-          <svg fill="#000000" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+          <svg fill="#e1e1e1" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
             <g id="SVGRepo_iconCarrier">
@@ -2250,7 +2250,7 @@ const stdDev = parseFloat(stdDevInput.value);
               <td class="dateTime-cell">${record.dateIn} ${record.timeIn || ""}</td>
               <td class="dateTime-cell">${record.dateOut} ${record.timeOut || ""}</td>
               <td class="image-icon" onclick="loadWeighmentImages('${record.slNo}', '${record.weightType}')" style="cursor: pointer;" title="View Weighment Images">
-                <svg fill="#000000" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+                <svg fill="#e1e1e1" width="24px" height="24px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
                   <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                   <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                   <g id="SVGRepo_iconCarrier">
@@ -2541,9 +2541,9 @@ function searchCustomRange() {
   });
 
   // Update display
-  document.getElementById(
-    "dateRangeDisplay"
-  ).textContent = `${fromFormatted} - ${toFormatted}`;
+  // document.getElementById(
+  //   "dateRangeDisplay"
+  // ).textContent = `${fromFormatted} - ${toFormatted}`;
 
   const button = document.querySelector(".search-button");
   const originalText = button.textContent;
@@ -2971,7 +2971,7 @@ function updateViolationCards(data, timeframe) {
         
         if (statNumber) {
           statNumber.style.opacity = '0';
-          
+          statNumber.classList.remove('loading-state');
           setTimeout(() => {
             animateNumber(statNumber, 0, data[property] || 0, 500);
             statNumber.style.opacity = '1';

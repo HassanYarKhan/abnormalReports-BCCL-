@@ -10,8 +10,8 @@
 
 body {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #2b2c29;
+  color: #e3e3e3;
   line-height: 1.5;
   min-height: 100vh;
 }
@@ -23,13 +23,13 @@ body {
 .container {
   width: 100%;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: #2b2c29;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header {
   padding: 16px 8px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #444444;
   margin-bottom: 24px;
   margin-left: 8px;
 }
@@ -47,8 +47,8 @@ body {
 
 .navbar {
   display: flex;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  background: #2b2c29;
+  border-bottom: 1px solid #444444;
   margin-bottom: 24px;
 }
 
@@ -62,7 +62,7 @@ body {
   border: none;
   font-weight: 500;
   font-size: 14px;
-  color: #757575;
+  color: #d8d8d8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   position: relative;
@@ -114,10 +114,10 @@ body {
    ============================================ */
 
 .filters {
-  background: #fafafa;
+  background: #35363a;
   padding: 16px;
   margin-bottom: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #444444;
 }
 
 .filter-group {
@@ -135,7 +135,7 @@ body {
 
 .filter-item label {
   font-weight: 500;
-  color: #616161;
+  color: #d8d8d8;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -144,11 +144,11 @@ body {
 .filter-item select,
 .filter-item input {
   padding: 8px 12px;
-  border: 1px solid #bdbdbd;
+  border: 1px solid #555555;
   font-size: 14px;
   min-width: 160px;
-  background: white;
-  color: #333;
+  background: #1a1a18;
+  color: #e3e3e3;
   font-family: inherit;
 }
 
@@ -199,8 +199,8 @@ body {
    ============================================ */
 
 .table-container {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
+  background: #2b2c29;
+  border: 1px solid #444444;
   overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   max-height: 600px;
@@ -240,7 +240,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: white;
+  background: #2b2c29;
 }
 
 .data-table thead::after {
@@ -254,12 +254,12 @@ body {
 }
 
 .data-table th {
-  background: #f5f5f5;
-  color: #616161;
+  background: #35363a;
+  color: #d8d8d8;
   padding: 16px 12px;
   text-align: center;
   font-weight: 500;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #444444;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -270,15 +270,15 @@ body {
 
 .data-table td {
   padding: 5px;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
+  border-bottom: 1px solid #444444;
+  color: #e3e3e3;
   text-align: center;
   vertical-align: top;
   margin: 4px;
 }
 
 .data-table tr:hover {
-  background-color: #fafafa;
+  background-color: #35363a;
 }
 
 .data-table tr td:first-child,
@@ -331,9 +331,9 @@ body {
   min-width: 100px;
   text-align: center;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-  background: rgba(25, 118, 210, 0.05);
+  background: rgba(25, 118, 210, 0.15);
   font-weight: 500;
-  color: #1565c0;
+  color: #7ec8ff;
   padding: 12px 16px;
 }
 
@@ -419,18 +419,18 @@ body {
    ============================================ */
 
 .do-header {
-  background: #ffffff;
+  background: #2b2c29;
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
 .do-header:hover {
-  background-color: #fafafa;
+  background-color: #35363a;
 }
 
 .do-header td {
   padding: 0 !important;
-  border-bottom: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid #444444 !important;
 }
 
 .do-header-content {
@@ -453,7 +453,7 @@ body {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   font-weight: 600;
   font-size: 15px;
-  color: rgba(0, 0, 0, 0.87);
+  color: #e3e3e3;
   white-space: nowrap;
 }
 
@@ -474,13 +474,13 @@ body {
 }
 
 .metric-item .label {
-  color: rgba(0, 0, 0, 0.6);
+  color: #d8d8d8;
   font-weight: 400;
 }
 
 .metric-item .value {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.87);
+  color: #e3e3e3;
   font-size: 15px;
 }
 
@@ -625,8 +625,8 @@ body {
 .accordion-tabs {
   display: flex;
   gap: 0;
-  background: #f5f5f5;
-  border-bottom: 2px solid #e0e0e0;
+  background: #35363a;
+  border-bottom: 2px solid #444444;
   padding: 0;
   margin: 0;
 }
@@ -634,10 +634,10 @@ body {
 .accordion-tab {
   flex: 1;
   padding: 14px 24px;
-  background: #f5f5f5;
+  background: #35363a;
   border: none;
-  border-right: 1px solid #e0e0e0;
-  color: #666;
+  border-right: 1px solid #444444;
+  color: #a0a0a0;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
@@ -652,19 +652,19 @@ body {
 }
 
 .accordion-tab:hover {
-  background: #e8e8e8;
-  color: #1976d2;
+  background: #444444;
+  color: #7ec8ff;
 }
 
 .accordion-tab.active {
-  background: white;
-  color: #1976d2;
+  background: #2b2c29;
+  color: #7ec8ff;
   font-weight: 600;
-  border-bottom: 3px solid #1976d2;
+  border-bottom: 3px solid #7ec8ff;
 }
 
 .accordion-tab-content {
-  background: white;
+  background: #2b2c29;
   min-height: 400px;
   position: relative;
 }
@@ -688,7 +688,7 @@ body {
   display: flex;
   gap: 20px;
   padding: 24px;
-  background: #fafafa;
+  background: #2b2c29;
 }
 
 .graph-container-section {
@@ -705,8 +705,8 @@ body {
    ============================================ */
 
 .graph-controls {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #35363a;
+  border: 1px solid #444444;
   border-radius: 8px;
   padding: 16px;
   display: flex;
@@ -722,9 +722,9 @@ body {
   gap: 16px;
   flex-wrap: wrap;
   font-size: 13px;
-  color: #333;
+  color: #e3e3e3;
   padding: 8px;
-  background: #f9fafb;
+  background: #444444;
   border-radius: 6px;
 }
 
@@ -736,7 +736,7 @@ body {
 
 .graph-stats strong {
   font-weight: 600;
-  color: #1976d2;
+  color: #7ec8ff;
 }
 
 .graph-legend {
@@ -753,7 +753,7 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #666;
+  color: #d8d8d8;
   font-weight: 500;
 }
 
@@ -769,7 +769,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 8px;
-  background: #f0f4f8;
+  background: #444444;
   border-radius: 6px;
 }
 
@@ -820,7 +820,7 @@ body {
 .graph-toggle-text {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #e3e3e3;
 }
 
 /* ============================================
@@ -829,16 +829,16 @@ body {
 
 .graph-scroll-wrapper {
   position: relative;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #35363a;
+  border: 1px solid #444444;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  min-width: 0; /* Allow shrinking */
-  min-height: 500px; /* Minimum height */
-  max-height: 700px; /* Maximum height */
-  height: auto; /* Allow dynamic height */
+  min-width: 0;
+  min-height: 500px;
+  max-height: 700px;
+  height: auto;
 }
 
 .graph-canvas-wrapper {
@@ -940,8 +940,8 @@ body {
   flex: 1;
   min-width: 300px;
   max-width: calc(40vw - 20px);
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #35363a;
+  border: 1px solid #444444;
   border-radius: 8px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1047,11 +1047,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: #2b2c29;
 }
 
 .trip-info-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: #35363a;
+  border: 1px solid #444444;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -1063,12 +1064,12 @@ body {
 }
 
 .trip-info-card-header {
-  background: linear-gradient(to right, #f9fafb, #f3f4f6);
+  background: linear-gradient(to right, #444444, #3f4043);
   padding: 12px 16px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid #444444;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #e3e3e3;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
@@ -1097,47 +1098,47 @@ body {
 .trip-info-table-label {
   padding: 12px 16px;
   font-size: 12px;
-  color: #6b7280;
+  color: #d8d8d8;
   font-weight: 500;
   width: 45%;
-  background: #fafafa;
+  background: #444444;
 }
 
 .trip-info-table-value {
   padding: 12px 16px;
   font-size: 14px;
-  color: #1f2937;
+  color: #e3e3e3;
   font-weight: 600;
   width: 55%;
 }
 
 .trip-info-table-value.trip-time-highlight {
   font-size: 20px;
-  color: #1976d2;
+  color: #7ec8ff;
   font-weight: 700;
 }
 
 .trip-info-table-value.trip-time-highlight-start, .trip-info-table-value.trip-time-highlight-end {
   font-size: 16px;
-  color: #1976d2;
+  color: #7ec8ff;
   font-weight: 700;
 }
 
 .trip-info-table-section {
   padding: 10px 16px;
   font-size: 11px;
-  color: #9ca3af;
+  color: #d8d8d8;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background: #444444;
+  border-top: 1px solid #444444;
 }
 
 .trip-info-table-divider {
   padding: 0;
   height: 8px;
-  background: #f9fafb;
+  background: #444444;
 }
 
 .range-badge {
@@ -1290,7 +1291,7 @@ body {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #444444;
   padding-bottom: 4px;
 }
 
@@ -1298,7 +1299,7 @@ body {
   padding: 8px 20px;
   border: none;
   background: transparent;
-  color: #666;
+  color: #d8d8d8;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -1309,11 +1310,11 @@ body {
 }
 
 .summary-tab:hover {
-  color: #1976d2;
+  color: #7ec8ff;
 }
 
 .summary-tab.active {
-  color: #1976d2;
+  color: #7ec8ff;
 }
 
 .summary-tab.active::after {
@@ -1323,7 +1324,7 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #1976d2;
+  background-color: #7ec8ff;
 }
 
 /* ============================================
@@ -1336,7 +1337,7 @@ body {
   transition: opacity 0.3s ease;
   height: 0;
   overflow: visible !important;
-  background: #fff;
+  background: #2b2c29;
   padding: 24px 0;
 }
 
@@ -1369,13 +1370,13 @@ body {
 }
 
 .stat-card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #444444;
   padding: 12px 14px;
-  background-color: #fcfcfc;
+  background-color: #35363a;
   position: relative;
   transition: all 0.2s ease;
   height: fit-content;
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid #7ec8ff;
   overflow: visible !important;
   z-index: auto;
 }
@@ -1392,10 +1393,10 @@ body {
 .stat-card-header {
   font-size: 16px;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: #e3e3e3;
   margin: 0 0 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid #444444;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   display: flex;
   align-items: center;
@@ -1440,7 +1441,7 @@ body {
 }
 
 .stat-label {
-  color: rgba(0, 0, 0, 0.6);
+  color: #d8d8d8;
   font-size: 14px;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   text-align: left;
@@ -1452,7 +1453,7 @@ body {
 .stat-number {
   font-weight: 500;
   font-size: 16px;
-  color: rgba(0, 0, 0, 0.87);
+  color: #e3e3e3;
   text-align: center;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   flex-shrink: 0;
@@ -1474,7 +1475,7 @@ body {
 }
 
 .stat-number.primary {
-  color: #1976d2;
+  color: #7ec8ff;
 }
 
 .primary-stat {
@@ -1486,7 +1487,7 @@ body {
   border-left-color: #d32f2f;
   background: linear-gradient(
     to right,
-    rgba(211, 47, 47, 0.05),
+    rgba(211, 47, 47, 0.1),
     transparent 70%
   );
 }
