@@ -1489,10 +1489,10 @@ body {
 }
 
 .total-violations-card {
-  border-left-color: #d32f2f;
+  border-left-color: #5db8ff;
   background: linear-gradient(
     to right,
-    rgba(211, 47, 47, 0.1),
+    rgba(47, 47, 247, 0.1),
     transparent 70%
   );
 }
@@ -1541,10 +1541,10 @@ body {
   width: 420px;
   max-width: 90vw;
   max-height: 80vh;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #35363a;
+  border: 1px solid #444444;
   border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   z-index: 999999;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   pointer-events: none;
@@ -1557,21 +1557,21 @@ body {
 }
 
 .tooltip-header {
-  background: linear-gradient(135deg, #2996f4 0%, #1e7fd4 100%);
-  color: white;
+  background: linear-gradient(135deg, #7ec8ff 0%, #5db8ff 100%);
+  color: #2b2c29;
   padding: 14px 18px;
   border-radius: 8px 8px 0 0;
   font-weight: 600;
   font-size: 15px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .tooltip-content {
   padding: 18px 20px;
   font-size: 13px;
   line-height: 1.7;
-  color: #333;
+  color: #e3e3e3;
   max-height: calc(80vh - 60px);
   overflow-y: auto;
 }
@@ -1585,7 +1585,7 @@ body {
 }
 
 .tooltip-content strong {
-  color: #2996f4;
+  color: #7ec8ff;
   font-weight: 600;
 }
 
@@ -1600,14 +1600,14 @@ body {
 }
 
 .tooltip-note {
-  background: #f0f8ff;
-  border-left: 3px solid #2996f4;
+  background: rgba(126, 200, 255, 0.1);
+  border-left: 3px solid #7ec8ff;
   padding: 12px 14px;
   margin-top: 14px !important;
   margin-bottom: 0 !important;
   font-style: italic;
   font-size: 12px;
-  color: #555;
+  color: #d8d8d8;
   border-radius: 4px;
   line-height: 1.6;
 }
@@ -1617,17 +1617,17 @@ body {
 }
 
 .tooltip-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #444444;
   border-radius: 3px;
 }
 
 .tooltip-content::-webkit-scrollbar-thumb {
-  background: #2996f4;
+  background: #7ec8ff;
   border-radius: 3px;
 }
 
 .tooltip-content::-webkit-scrollbar-thumb:hover {
-  background: #1e7fd4;
+  background: #5db8ff;
 }
 
 /* ============================================

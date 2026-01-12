@@ -6,8 +6,8 @@ const blobBaseUrl =
 async function getAbnormalWeighmentImg(req, res) {
   const slNo = req.query.slNo;
   const weightType = req.query.weightType;
-  //console.log("Fetching images for weighment SL No:", slNo);
-  //console.log("Weighment Type:", weightType);
+  console.log("Fetching images for weighment SL No:", slNo);
+  console.log("Weighment Type:", weightType);
 
   let imageUrls = [];
 
