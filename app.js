@@ -26,8 +26,13 @@ app.use(cors({
   credentials: true
 }));
 
+// Images directory
+const IMAGES_PATH = path.resolve(process.env.IMG_PATH);
+app.use("/images", express.static(IMAGES_PATH));
+
 // Serve static files from public/
 app.use(express.static(path.join(__dirname, "public")));
+
 
 // Routes
 app.use("/api/vehicles", vehiclesRouter);

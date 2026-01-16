@@ -1,59 +1,81 @@
-// CONSTANTS
-const sasToken ="sp=r&st=2025-06-14T06:04:13Z&se=2029-06-14T14:04:13Z&sv=2024-11-04&sr=c&sig=Nc1NAZbfhxK9sYcAd%2BhVuwq1Ek%2B0rfeQ2ED%2FkkI5mD8%3D";
-const blobBaseUrl =
-  "https://cclrfidvts.blob.core.windows.net/weighment-images/";
+import fs from "fs";
+import path from "path";
+
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:8500";
+const IMAGE_BASE_DIR = path.resolve(process.env.IMG_PATH);
 
 async function getAbnormalWeighmentImg(req, res) {
-  const slNo = req.query.slNo;
-  const weightType = req.query.weightType;
-  console.log("Fetching images for weighment SL No:", slNo);
-  console.log("Weighment Type:", weightType);
+  const { slNo, weightType } = req.query;
 
-  let imageUrls = [];
+  if (!slNo || !weightType) {
+    return res.status(400).json({
+      success: false,
+      message: "slNo and weightType are required"
+    });
+  }
+
+  let expectedImages = [];
 
   switch (weightType) {
-    case "Sending": {
-      imageUrls = [
-        `${blobBaseUrl}${slNo}_sw1.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw2.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw3.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw4.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw_c0.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw_c1.jpg?${sasToken}`
+    case "Test":
+      expectedImages = [`${slNo}.jpg`];
+      break;
+      
+    case "Sending":
+      expectedImages = [
+        `${slNo}_sw1.jpg`,
+        `${slNo}_sw2.jpg`,
+        `${slNo}_sw3.jpg`,
+        `${slNo}_sw4.jpg`,
+        `${slNo}_sw_c0.jpg`,
+        `${slNo}_sw_c1.jpg`
       ];
       break;
-    }
-    case "Receiving": {
-      imageUrls = [
-        `${blobBaseUrl}${slNo}_fw1.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_fw2.jpg?${sasToken}`,
-        //  `${blobBaseUrl}${slNo}_fw3.jpg?${sasToken}`,
-        // `${blobBaseUrl}${slNo}_fw4.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_fw_c0.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_fw_c1.jpg?${sasToken}`
+
+    case "Receiving":
+      expectedImages = [
+        `${slNo}_fw1.jpg`,
+        `${slNo}_fw2.jpg`,
+        // `${slNo}_fw3.jpg`,
+        // `${slNo}_fw4.jpg`,
+        `${slNo}_fw_c0.jpg`,
+        `${slNo}_fw_c1.jpg`
       ];
       break;
-    }
-    case "Dispatch": {
-      imageUrls = [
-        `${blobBaseUrl}${slNo}_sw1.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw2.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw3.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw4.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw_c0.jpg?${sasToken}`,
-        `${blobBaseUrl}${slNo}_sw_c1.jpg?${sasToken}`
+
+    case "Dispatch":
+      expectedImages = [
+        `${slNo}_sw1.jpg`,
+        `${slNo}_sw2.jpg`,
+        `${slNo}_sw3.jpg`,
+        `${slNo}_sw4.jpg`,
+        `${slNo}_sw_c0.jpg`,
+        `${slNo}_sw_c1.jpg`
       ];
       break;
-    }
-    default: {
-      return res.status(400).json({ error: "Invalid weight type" });
-    }
+
+    default:
+      return res.status(400).json({
+        success: false,
+        message: "Invalid weight type"
+      });
   }
-  
-  res.status(200).json({
-    slNO: slNo,
-    weightType: weightType,
+
+  // check if file exists
+  const imageUrls = expectedImages
+    .filter(fileName =>
+      fs.existsSync(path.join(IMAGE_BASE_DIR, fileName))
+    )
+    .map(fileName =>
+      // `${SERVER_URL}/anprimages/wbdata/${fileName}`
+      `${SERVER_URL}/images/${fileName}`
+    );
+
+  return res.status(200).json({
+    slNo,
+    weightType,
     success: true,
+    imageCount: imageUrls.length,
     imageUrls
   });
 }
