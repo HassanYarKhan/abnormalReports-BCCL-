@@ -7,6 +7,7 @@ const serverURL = "http://localhost:8500";
 
 // Store the fetched report data globally
 let currentReportData = null;
+window.currentReportData = null; // Make accessible to export module
 
 // Store current expanded DO
 let currentExpandedDO = null;
@@ -606,6 +607,7 @@ function populateTable(data) {
   console.log("Populating table with data:", data);
 
   currentReportData = data;
+  window.currentReportData = data; // Make accessible to export module
 
   closeAllAccordions();
 
