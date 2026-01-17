@@ -530,7 +530,7 @@ const tripReportsSummary = {
     if (!vehicleData || vehicleData.length === 0) {
       return `
         <div class="summary-table" style="margin-top: 24px;">
-          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
+          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top Vehicles by Irregular Trips</h3>
           <p style="color: #d8d8d8; padding: 20px; text-align: center;">No trip deviations found</p>
         </div>
       `;
@@ -538,7 +538,7 @@ const tripReportsSummary = {
 
     return `
       <div class="summary-table" style="margin-top: 24px;">
-        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Vehicles by Irregular Trips</h3>
+        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top Vehicles by Irregular Trips</h3>
         <table class="data-table">
           <thead>
             <tr>
@@ -621,7 +621,7 @@ const tripReportsSummary = {
     if (!doData || doData.length === 0) {
       return `
         <div class="summary-table" style="margin-top: 24px;">
-          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
+          <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top Delivery Orders by Irregular Trip Times</h3>
           <p style="color: #d8d8d8; padding: 20px; text-align: center;">No trip time deviations found</p>
         </div>
       `;
@@ -629,7 +629,7 @@ const tripReportsSummary = {
 
     return `
       <div class="summary-table" style="margin-top: 24px;">
-        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top 5 Delivery Orders by Irregular Trip Times</h3>
+        <h3 style="font-size: 18px; color: #e3e3e3; margin-bottom: 12px; padding: 12px;">Top Delivery Orders by Irregular Trip Times</h3>
         <table class="data-table">
           <thead>
             <tr>
