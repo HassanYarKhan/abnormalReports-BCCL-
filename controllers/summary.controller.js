@@ -367,13 +367,13 @@ async function getViolationSummary(req, res) {
       );
 
       summary.violations = {
-        total_violations: violationQuery[0].total_violations || 0,
+        total_violations: (violationQuery && violationQuery[0]) ? violationQuery[0].total_violations || 0 : 0,
         unique_vehicles_with_violations:
-          violationQuery[0].unique_vehicles_with_violations || 0,
+          (violationQuery && violationQuery[0]) ? violationQuery[0].unique_vehicles_with_violations || 0 : 0,
         unique_weighbridges_with_violations:
-          violationQuery[0].unique_weighbridges_with_violations || 0,
+          (violationQuery && violationQuery[0]) ? violationQuery[0].unique_weighbridges_with_violations || 0 : 0,
         unique_areas_with_violations:
-          violationQuery[0].unique_areas_with_violations || 0,
+          (violationQuery && violationQuery[0]) ? violationQuery[0].unique_areas_with_violations || 0 : 0,
       };
     }
 

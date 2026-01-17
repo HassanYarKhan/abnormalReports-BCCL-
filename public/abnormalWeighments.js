@@ -2913,26 +2913,42 @@ async function fetchViolationsSummary(from, to) {
   const stdDev = window.weighmentSettings.getStdDev();
   
   try {
-    console.log(`Fetching violations summary for ${from} to ${to} with stdDev ${stdDev}%`);
-    const response = await fetch(
-      `${serverURL}/api/summary/violationSummary?from=${from}&to=${to}&standardDeviation=${stdDev}`
-    );
+    const url = `${serverURL}/api/summary/violationSummary?from=${from}&to=${to}&standardDeviation=${stdDev}`;
+    console.log(`[fetchViolationsSummary] Fetching from URL:`, url);
+    const response = await fetch(url);
 
+    console.log(`[fetchViolationsSummary] Response status:`, response.status);
+    
     if (!response.ok) {
+      console.error(`[fetchViolationsSummary] Response not OK:`, response.status, response.statusText);
       throw new Error(`API returned status: ${response.status}`);
     }
     const data = await response.json();
-    return data.summary && data.summary.violations
-      ? data.summary.violations
-      : null;
+    console.log(`[fetchViolationsSummary] Raw response:`, JSON.stringify(data, null, 2));
+    
+    if (!data.summary) {
+      console.warn(`[fetchViolationsSummary] No summary in response`);
+      return null;
+    }
+    
+    if (!data.summary.violations) {
+      console.warn(`[fetchViolationsSummary] No violations in summary`);
+      return null;
+    }
+    
+    const result = data.summary.violations;
+    console.log(`[fetchViolationsSummary] Extracted violations data:`, result);
+    return result;
   } catch (error) {
-    console.error("Error fetching violations data:", error);
+    console.error("[fetchViolationsSummary] Error:", error.message);
     return null;
   }
 }
 
 // Function to update violation summary cards with loading state
 function setViolationCardsLoading(timeframe) {
+  console.log(`[setViolationCardsLoading] Setting loading state for ${timeframe}`);
+  
   const cardTypes = [
     'total-violations',
     'areas-violations',
@@ -2941,14 +2957,21 @@ function setViolationCardsLoading(timeframe) {
   ];
   
   cardTypes.forEach(type => {
-    const card = document.querySelector(`[data-${timeframe}-${type}]`);
+    const selector = `[data-${timeframe}-${type}]`;
+    const card = document.querySelector(selector);
+    console.log(`[setViolationCardsLoading] Looking for selector: ${selector}, found:`, !!card);
+    
     if (card) {
       card.classList.add('loading-state');
       const statNumber = card.querySelector('.stat-number');
       if (statNumber) {
         statNumber.textContent = '--';
         statNumber.style.opacity = '0.5';
+        // Add loading state to the stat-number element as well
+        statNumber.classList.add('loading-state');
       }
+    } else {
+      console.warn(`[setViolationCardsLoading] Card not found for ${selector}`);
     }
   });
 }
@@ -2962,25 +2985,33 @@ function updateViolationCards(data, timeframe) {
     { selector: 'wb-violations', property: 'unique_weighbridges_with_violations' }
   ];
   
+  console.log(`[updateViolationCards] Updating ${timeframe} cards with data:`, data);
+  
   if (data) {
     cardTypes.forEach(({ selector, property }, index) => {
       const card = document.querySelector(`[data-${timeframe}-${selector}]`);
+      console.log(`[updateViolationCards] Looking for [data-${timeframe}-${selector}], found:`, !!card);
       if (card) {
         card.classList.remove('loading-state', 'error-state');
         const statNumber = card.querySelector('.stat-number');
         
         if (statNumber) {
           statNumber.style.opacity = '0';
+          // Remove loading state from the stat-number element itself
           statNumber.classList.remove('loading-state');
           setTimeout(() => {
+            console.log(`[updateViolationCards] Animating ${selector} from 0 to ${data[property]}`);
             animateNumber(statNumber, 0, data[property] || 0, 500);
             statNumber.style.opacity = '1';
           }, index * 100);
         }
+      } else {
+        console.warn(`[updateViolationCards] Card not found for selector [data-${timeframe}-${selector}]`);
       }
     });
   } else {
     // Handle no data case
+    console.warn(`[updateViolationCards] No data provided for ${timeframe}, setting error state`);
     cardTypes.forEach(({ selector }) => {
       const card = document.querySelector(`[data-${timeframe}-${selector}]`);
       if (card) {
@@ -2990,6 +3021,8 @@ function updateViolationCards(data, timeframe) {
         if (statNumber) {
           statNumber.textContent = '0';
           statNumber.style.opacity = '0.7';
+          // Also remove loading state from stat-number
+          statNumber.classList.remove('loading-state');
         }
       }
     });
@@ -3040,7 +3073,9 @@ async function loadViolationSummary(timeframe) {
   }
   
   try {
+    console.log(`[loadViolationSummary] Loading ${timeframe} from ${fromDate} to ${toDate}`);
     const violationsData = await fetchViolationsSummary(fromDate, toDate);
+    console.log(`[loadViolationSummary] Received data for ${timeframe}:`, violationsData);
     updateViolationCards(violationsData, timeframe);
   } catch (error) {
     console.error(`Error loading ${timeframe} violation summary:`, error);
@@ -3050,6 +3085,20 @@ async function loadViolationSummary(timeframe) {
 
 // Initialize all summaries when the page loads
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("[DOMContentLoaded] Page loaded, initializing...");
+  
+  // Initialize settings first (in case it hasn't been initialized yet)
+  if (!window.weighmentSettings.stdDev) {
+    console.log("[DOMContentLoaded] Initializing weighment settings...");
+    window.weighmentSettings.init();
+  } else {
+    console.log("[DOMContentLoaded] Weighment settings already initialized");
+  }
+  
+  // Check if violation cards exist in the DOM
+  const testCard = document.querySelector('[data-daily-total-violations]');
+  console.log("[DOMContentLoaded] Found daily total violations card:", !!testCard);
+  
   // Load card statistics
   loadDailySummary();
   loadWeeklySummary();
