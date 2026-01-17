@@ -23,6 +23,7 @@ async function getAbnormalWeighmentImg(req, res) {
       
     case "Sending":
       expectedImages = [
+        `test.jpg`,
         `${slNo}_sw1.jpg`,
         `${slNo}_sw2.jpg`,
         `${slNo}_sw3.jpg`,
@@ -70,7 +71,6 @@ async function getAbnormalWeighmentImg(req, res) {
       // `${SERVER_URL}/anprimages/wbdata/${fileName}`
       `${SERVER_URL}/images/${fileName}`
     );
-
   return res.status(200).json({
     slNo,
     weightType,

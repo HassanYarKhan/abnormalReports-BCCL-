@@ -547,6 +547,18 @@ async function getVehicleWiseTripSummary(req, res) {
   }
 
   try {
+    // Calculate if single day query
+    const isSingleDay = from === to;
+    
+    // For single day, expand the date range to trick the optimizer
+    // but filter to actual dates in the WHERE clause
+    const optimizerFromDate = isSingleDay ? 
+      new Date(new Date(from).setDate(new Date(from).getDate() - 3)).toISOString().split('T')[0] : 
+      from;
+    const optimizerToDate = isSingleDay ? 
+      new Date(new Date(to).setDate(new Date(to).getDate() + 3)).toISOString().split('T')[0] : 
+      to;
+
     const dbResponse = await dbInstanceRFID.query(
       `
       WITH TripData AS (
@@ -571,10 +583,12 @@ async function getVehicleWiseTripSummary(req, res) {
           r.W_TYPE = 'J'
           AND r.SRC_SLNO IS NOT NULL
           AND r.SRC_SLNO <> ''
-          AND r.DATE_IN >= :fromDate
-          AND r.DATE_IN < DATEADD(DAY, 1, :toDate)
-          AND s.DATE_OUT >= DATEADD(DAY, -1, :fromDate)
-          AND s.DATE_OUT < DATEADD(DAY, 2, :toDate)
+          AND r.DATE_IN >= :optimizerFromDate
+          AND r.DATE_IN < DATEADD(DAY, 1, :optimizerToDate)
+          AND s.DATE_OUT >= DATEADD(DAY, -1, :optimizerFromDate)
+          AND s.DATE_OUT < DATEADD(DAY, 2, :optimizerToDate)
+          AND r.DATE_IN >= :actualFromDate
+          AND r.DATE_IN < DATEADD(DAY, 1, :actualToDate)
           AND s.DATE_OUT IS NOT NULL 
           AND s.TIME_OUT IS NOT NULL
           AND r.DATE_IN IS NOT NULL 
@@ -595,7 +609,6 @@ async function getVehicleWiseTripSummary(req, res) {
         FROM TripData
         WHERE Trip_Seconds IS NOT NULL
       ),
-      -- Calculate IQR per DO_Number
       DONumberedTrips AS (
         SELECT
           DO_Number,
@@ -691,8 +704,10 @@ async function getVehicleWiseTripSummary(req, res) {
       `,
       {
         replacements: {
-          fromDate: from,
-          toDate: to,
+          optimizerFromDate: optimizerFromDate,
+          optimizerToDate: optimizerToDate,
+          actualFromDate: from,
+          actualToDate: to,
         },
         type: dbInstanceRFID.QueryTypes.SELECT,
       }
@@ -732,6 +747,15 @@ async function getDOWiseTripSummary(req, res) {
   }
 
   try {
+    const isSingleDay = from === to;
+    
+    const optimizerFromDate = isSingleDay ? 
+      new Date(new Date(from).setDate(new Date(from).getDate() - 3)).toISOString().split('T')[0] : 
+      from;
+    const optimizerToDate = isSingleDay ? 
+      new Date(new Date(to).setDate(new Date(to).getDate() + 3)).toISOString().split('T')[0] : 
+      to;
+
     const dbResponse = await dbInstanceRFID.query(
       `
       WITH TripData AS (
@@ -756,10 +780,12 @@ async function getDOWiseTripSummary(req, res) {
           r.W_TYPE = 'J'
           AND r.SRC_SLNO IS NOT NULL
           AND r.SRC_SLNO <> ''
-          AND r.DATE_IN >= :fromDate
-          AND r.DATE_IN < DATEADD(DAY, 1, :toDate)
-          AND s.DATE_OUT >= DATEADD(DAY, -1, :fromDate)
-          AND s.DATE_OUT < DATEADD(DAY, 2, :toDate)
+          AND r.DATE_IN >= :optimizerFromDate
+          AND r.DATE_IN < DATEADD(DAY, 1, :optimizerToDate)
+          AND s.DATE_OUT >= DATEADD(DAY, -1, :optimizerFromDate)
+          AND s.DATE_OUT < DATEADD(DAY, 2, :optimizerToDate)
+          AND r.DATE_IN >= :actualFromDate
+          AND r.DATE_IN < DATEADD(DAY, 1, :actualToDate)
           AND s.DATE_OUT IS NOT NULL 
           AND s.TIME_OUT IS NOT NULL
           AND r.DATE_IN IS NOT NULL 
@@ -780,7 +806,6 @@ async function getDOWiseTripSummary(req, res) {
         FROM TripData
         WHERE Trip_Seconds IS NOT NULL
       ),
-      -- Calculate IQR per DO_Number
       DONumberedTrips AS (
         SELECT
           DO_Number,
@@ -910,8 +935,10 @@ async function getDOWiseTripSummary(req, res) {
       `,
       {
         replacements: {
-          fromDate: from,
-          toDate: to,
+          optimizerFromDate: optimizerFromDate,
+          optimizerToDate: optimizerToDate,
+          actualFromDate: from,
+          actualToDate: to,
         },
         type: dbInstanceRFID.QueryTypes.SELECT,
       }
