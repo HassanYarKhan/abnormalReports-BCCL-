@@ -33,6 +33,7 @@ function formatDateTime(dateTimeString) {
   return `${HH}:${minutes}:${seconds} ${ampm} ${DD}-${MM}-${YYYY}`;
 }
 
+
 // ============================================
 // INITIALIZATION FUNCTIONS
 // ============================================
@@ -49,15 +50,28 @@ function setDefaultDateTime() {
   const fromDateTime = `${dateStr}T00:00`;
   const toDateTime = `${dateStr}T23:59`;
 
+  // Set default datetime inputs (today's date range)
   const fromDateInput = document.getElementById("from-date");
   const toDateInput = document.getElementById("to-date");
   if (fromDateInput) fromDateInput.value = fromDateTime;
   if (toDateInput) toDateInput.value = toDateTime;
 
+  // Set custom range inputs (yesterday midnight to today's current time)
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const yesterdayYear = yesterday.getFullYear();
+  const yesterdayMonth = String(yesterday.getMonth() + 1).padStart(2, "0");
+  const yesterdayDay = String(yesterday.getDate()).padStart(2, "0");
+  const yesterdayDateStr = `${yesterdayYear}-${yesterdayMonth}-${yesterdayDay}`;
+  
+  const customFromDateTime = `${yesterdayDateStr}T00:00`;
+  const customToDateTime = today.toISOString().slice(0, 16); // Current date and time
+  
   const customFromDateInput = document.getElementById("custom-from-date");
   const customToDateInput = document.getElementById("custom-to-date");
-  if (customFromDateInput) customFromDateInput.value = fromDateTime;
-  if (customToDateInput) customToDateInput.value = toDateTime;
+  if (customFromDateInput) customFromDateInput.value = customFromDateTime;
+  if (customToDateInput) customToDateInput.value = customToDateTime;
 }
 
 // Switch between tabs

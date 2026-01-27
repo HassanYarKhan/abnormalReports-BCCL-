@@ -271,9 +271,9 @@ const tripReportsSummary = {
   },
 
   // Fetch Latest Trips Summary
-    async fetchTotalSummaryLatest() {
+  async fetchTotalSummaryLatest() {
     const response = await fetch(
-      `${this.apiBaseUrl}/trips/latest/totalViolations`
+      `${this.apiBaseUrl}/trips/latest/totalViolations`,
     );
     if (!response.ok) throw new Error("Failed to fetch total summary");
     const result = await response.json();
@@ -282,9 +282,7 @@ const tripReportsSummary = {
 
   // Fetch vehicle-wise summary
   async fetchVehicleSummaryLatest() {
-    const response = await fetch(
-      `${this.apiBaseUrl}/trips/latest/vehicleWise`
-    );
+    const response = await fetch(`${this.apiBaseUrl}/trips/latest/vehicleWise`);
     if (!response.ok) throw new Error("Failed to fetch vehicle summary");
     const result = await response.json();
     return result.data;
@@ -292,20 +290,17 @@ const tripReportsSummary = {
 
   // Fetch DO-wise summary
   async fetchDOSummaryLatest() {
-    const response = await fetch(
-      `${this.apiBaseUrl}/trips/latest/doWise`
-    );
+    const response = await fetch(`${this.apiBaseUrl}/trips/latest/doWise`);
     if (!response.ok) throw new Error("Failed to fetch DO summary");
     const result = await response.json();
     console.log("DO Summary fetched:", result);
     return result.data;
   },
-  
 
   // Fetch total trip violation summary
   async fetchTotalSummary(from, to) {
     const response = await fetch(
-      `${this.apiBaseUrl}/totalTripViolationSummary?from=${from}&to=${to}`
+      `${this.apiBaseUrl}/totalTripViolationSummary?from=${from}&to=${to}`,
     );
     if (!response.ok) throw new Error("Failed to fetch total summary");
     const result = await response.json();
@@ -315,7 +310,7 @@ const tripReportsSummary = {
   // Fetch vehicle-wise summary
   async fetchVehicleSummary(from, to) {
     const response = await fetch(
-      `${this.apiBaseUrl}/vehicleWiseTripSummary?from=${from}&to=${to}`
+      `${this.apiBaseUrl}/vehicleWiseTripSummary?from=${from}&to=${to}`,
     );
     if (!response.ok) throw new Error("Failed to fetch vehicle summary");
     const result = await response.json();
@@ -325,7 +320,7 @@ const tripReportsSummary = {
   // Fetch DO-wise summary
   async fetchDOSummary(from, to) {
     const response = await fetch(
-      `${this.apiBaseUrl}/doWiseTripSummary?from=${from}&to=${to}`
+      `${this.apiBaseUrl}/doWiseTripSummary?from=${from}&to=${to}`,
     );
     if (!response.ok) throw new Error("Failed to fetch DO summary");
     const result = await response.json();
@@ -380,14 +375,19 @@ const tripReportsSummary = {
       `;
     }
 
+    const dateStr =
+      section.id === "dailySummary"
+        ? "Most Recent 1000 trips"
+        : `${this.formatDate(data.dateRange.from)} - ${this.formatDate(
+            data.dateRange.to,
+          )}`;
+
     content.innerHTML = `
       ${customControls}
       <div class="summary-header" style="margin-bottom: 24px;">
         <h2 style="font-size: 24px; color: #7ec8ff; margin-bottom: 8px;">${title}</h2>
         <p style="color: #d8d8d8; font-size: 14px;">
-          ${this.formatDate(data.dateRange.from)} - ${this.formatDate(
-      data.dateRange.to
-    )}
+            ${dateStr}
         </p>
       </div>
 
@@ -467,7 +467,7 @@ const tripReportsSummary = {
     </div>
       <div class="stat-card-body total-violation-stat-card horizontal-layout">
         <div class="stat-section">
-          <span class="stat-label">Irregular Trips Today</span>
+          <span class="stat-label">Irregular Trips</span>
           <span class="stat-number large error">${totalData.Total_Violations || 0}</span>
         </div>
         <div class="stat-section">
@@ -637,7 +637,7 @@ const tripReportsSummary = {
                   </div>
                 </td>
               </tr>
-            `
+            `,
               )
               .join("")}
           </tbody>
@@ -729,7 +729,7 @@ const tripReportsSummary = {
                   </div>
                 </td>
               </tr>
-            `
+            `,
               )
               .join("")}
           </tbody>
@@ -837,7 +837,7 @@ const tripReportsSummary = {
         reportHeader.style.display = "none";
       }
 
-      // Extract unit code number 
+      // Extract unit code number
       const cleanUnitCode = unitCode.split(" - ")[0].trim();
       console.log("Clean Unit Code:", cleanUnitCode);
 
@@ -864,7 +864,7 @@ const tripReportsSummary = {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -879,11 +879,11 @@ const tripReportsSummary = {
         console.log("First DO Group:", result.data[0]);
         console.log("DO_Number:", result.data[0].DO_Number);
       }
-      
+
       // Filter for the specific DO
       const cleanDONumber = String(doNumber).trim();
       const filteredDOGroups = result.data.filter(
-        (doGroup) => String(doGroup.DO_Number).trim() === cleanDONumber
+        (doGroup) => String(doGroup.DO_Number).trim() === cleanDONumber,
       );
 
       console.log("Filtered DO Groups Count:", filteredDOGroups.length);
@@ -895,31 +895,31 @@ const tripReportsSummary = {
           summary: {
             totalTrips: filteredDOGroups.reduce(
               (sum, dg) => sum + dg.statistics.total_trips,
-              0
+              0,
             ),
             uniqueDOCount: filteredDOGroups.length,
             uniqueVehicleCount: new Set(
               filteredDOGroups.flatMap((dg) =>
-                dg.vehiclesData.map((v) => v.Vehicle_Number)
-              )
+                dg.vehiclesData.map((v) => v.Vehicle_Number),
+              ),
             ).size,
             totalOutliers: filteredDOGroups.reduce(
               (sum, dg) => sum + dg.statistics.outlier_count,
-              0
+              0,
             ),
             totalNormalTrips: filteredDOGroups.reduce(
               (sum, dg) =>
                 sum + (dg.statistics.total_trips - dg.statistics.outlier_count),
-              0
+              0,
             ),
             outlierPercentage: (
               (filteredDOGroups.reduce(
                 (sum, dg) => sum + dg.statistics.outlier_count,
-                0
+                0,
               ) /
                 filteredDOGroups.reduce(
                   (sum, dg) => sum + dg.statistics.total_trips,
-                  0
+                  0,
                 )) *
               100
             ).toFixed(2),
@@ -965,7 +965,7 @@ const tripReportsSummary = {
     vehicleNumber,
     unitCode,
     sourceArea,
-    dateRange
+    dateRange,
   ) {
     if (
       !doNumber ||
@@ -1016,7 +1016,7 @@ const tripReportsSummary = {
             from: dateRange.from,
             to: dateRange.to,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -1033,7 +1033,7 @@ const tripReportsSummary = {
 
         // Filter vehicle data within this DO group
         doGroup.vehiclesData = doGroup.vehiclesData.filter(
-          (v) => v.Vehicle_Number === vehicleNumber
+          (v) => v.Vehicle_Number === vehicleNumber,
         );
 
         return doGroup.vehiclesData.length > 0;
@@ -1045,7 +1045,7 @@ const tripReportsSummary = {
         // Recalculate statistics for filtered data
         filteredDOGroups.forEach((doGroup) => {
           const outliers = doGroup.vehiclesData.filter(
-            (v) => v.Is_Outlier
+            (v) => v.Is_Outlier,
           ).length;
           doGroup.statistics.total_trips = doGroup.vehiclesData.length;
           doGroup.statistics.outlier_count = outliers;
@@ -1057,27 +1057,27 @@ const tripReportsSummary = {
           summary: {
             totalTrips: filteredDOGroups.reduce(
               (sum, dg) => sum + dg.statistics.total_trips,
-              0
+              0,
             ),
             uniqueDOCount: filteredDOGroups.length,
             uniqueVehicleCount: 1, // Only one vehicle
             totalOutliers: filteredDOGroups.reduce(
               (sum, dg) => sum + dg.statistics.outlier_count,
-              0
+              0,
             ),
             totalNormalTrips: filteredDOGroups.reduce(
               (sum, dg) =>
                 sum + (dg.statistics.total_trips - dg.statistics.outlier_count),
-              0
+              0,
             ),
             outlierPercentage: (
               (filteredDOGroups.reduce(
                 (sum, dg) => sum + dg.statistics.outlier_count,
-                0
+                0,
               ) /
                 filteredDOGroups.reduce(
                   (sum, dg) => sum + dg.statistics.total_trips,
-                  0
+                  0,
                 )) *
               100
             ).toFixed(2),
@@ -1148,7 +1148,7 @@ const tripReportsSummary = {
 
         // Fetch and populate units for this area
         const response = await fetch(
-          `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${areaCode}`
+          `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${areaCode}`,
         );
         const data = await response.json();
 
@@ -1177,13 +1177,13 @@ const tripReportsSummary = {
 
           try {
             const response = await fetch(
-              `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${option.value}`
+              `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${option.value}`,
             );
             const data = await response.json();
 
             if (data.units && Array.isArray(data.units)) {
               const unitExists = data.units.some(
-                (unit) => unit.unitcode === unitCode
+                (unit) => unit.unitcode === unitCode,
               );
               if (unitExists) {
                 foundAreaCode = option.value;
@@ -1200,7 +1200,7 @@ const tripReportsSummary = {
           console.log("Area found and set to:", foundAreaCode);
 
           const response = await fetch(
-            `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${foundAreaCode}`
+            `${serverURL}/api/weighbridges/getUnitFromAreaCode?areaCode=${foundAreaCode}`,
           );
           const data = await response.json();
 
@@ -1246,8 +1246,29 @@ async function loadCustomRangeSummary() {
     return;
   }
 
-  const from = fromDate.split("T")[0];
-  const to = toDate.split("T")[0];
+  let from = fromDate.split("T")[0];
+  let to = toDate.split("T")[0];
+
+  // Check if from and to dates are the same
+  if (from === to) {
+    alert(
+      "From and To dates cannot be the same. Please select a range of at least 2 days.",
+    );
+    return;
+  }
+
+  // Ensure at least 2 days of data
+  const fromDateObj = new Date(from);
+  const toDateObj = new Date(to);
+  const daysDifference = Math.floor(
+    (toDateObj - fromDateObj) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysDifference < 1) {
+    // If less than 2 days, adjust 'from' to be 1 day before 'to'
+    fromDateObj.setTime(toDateObj.getTime() - 24 * 60 * 60 * 1000);
+    from = fromDateObj.toISOString().split("T")[0];
+  }
 
   // Create cache key for custom range
   const cacheKey = `${from}_${to}`;
@@ -1262,7 +1283,7 @@ async function loadCustomRangeSummary() {
       section,
       tripReportsSummary.cache.custom[cacheKey],
       "Custom Range Summary",
-      true
+      true,
     );
     return;
   }
@@ -1293,13 +1314,13 @@ async function loadCustomRangeSummary() {
       section,
       data,
       "Custom Range Summary",
-      true
+      true,
     );
   } catch (error) {
     console.error("Error loading custom range summary:", error);
     tripReportsSummary.showError(
       section,
-      "Failed to load custom range summary"
+      "Failed to load custom range summary",
     );
   }
 }
