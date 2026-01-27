@@ -6,7 +6,10 @@ import {
   getViolationSummary,
   getTotalTripViolationSummary,
   getVehicleWiseTripSummary,
-  getDOWiseTripSummary
+  getDOWiseTripSummary,
+  getLatestDOWiseTripSummary,
+  getLatestVehicleWiseTripSummary,
+  getLatestTotalTripViolationSummary
 } from "../controllers/summary.controller.js";
 
 const summaryRouter = Router();
@@ -18,5 +21,9 @@ summaryRouter.get("/violationSummary", getViolationSummary);
 summaryRouter.get("/totalTripViolationSummary", getTotalTripViolationSummary);
 summaryRouter.get("/vehicleWiseTripSummary", getVehicleWiseTripSummary);
 summaryRouter.get("/doWiseTripSummary", getDOWiseTripSummary);
+summaryRouter.get("/trips/latest/vehicleWise", getLatestVehicleWiseTripSummary);
+summaryRouter.get("/trips/latest/doWise", getLatestDOWiseTripSummary);
+summaryRouter.get("/trips/latest/totalViolations", getLatestTotalTripViolationSummary);
+
 
 export default summaryRouter;

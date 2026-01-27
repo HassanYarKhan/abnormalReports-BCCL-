@@ -1,6 +1,4 @@
 // exportTripReport.js - PDF Export Utility for Irregular Trip Duration Reports
-// Uses jsPDF + autoTable for professional report generation
-
 (function initTripExportModule() {
     function attach() {
         const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;

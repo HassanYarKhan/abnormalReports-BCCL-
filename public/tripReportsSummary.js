@@ -167,9 +167,9 @@ const tripReportsSummary = {
 
       // Load all summary data in parallel
       const [totalSummary, vehicleSummary, doSummary] = await Promise.all([
-        this.fetchTotalSummary(from, to),
-        this.fetchVehicleSummary(from, to),
-        this.fetchDOSummary(from, to),
+        this.fetchTotalSummaryLatest(),
+        this.fetchVehicleSummaryLatest(),
+        this.fetchDOSummaryLatest(),
       ]);
 
       const data = {
@@ -270,6 +270,36 @@ const tripReportsSummary = {
     }
   },
 
+  // Fetch Latest Trips Summary
+    async fetchTotalSummaryLatest() {
+    const response = await fetch(
+      `${this.apiBaseUrl}/trips/latest/totalViolations`
+    );
+    if (!response.ok) throw new Error("Failed to fetch total summary");
+    const result = await response.json();
+    return result.data;
+  },
+
+  // Fetch vehicle-wise summary
+  async fetchVehicleSummaryLatest() {
+    const response = await fetch(
+      `${this.apiBaseUrl}/trips/latest/vehicleWise`
+    );
+    if (!response.ok) throw new Error("Failed to fetch vehicle summary");
+    const result = await response.json();
+    return result.data;
+  },
+
+  // Fetch DO-wise summary
+  async fetchDOSummaryLatest() {
+    const response = await fetch(
+      `${this.apiBaseUrl}/trips/latest/doWise`
+    );
+    if (!response.ok) throw new Error("Failed to fetch DO summary");
+    const result = await response.json();
+    console.log("DO Summary fetched:", result);
+    return result.data;
+  },
   
 
   // Fetch total trip violation summary

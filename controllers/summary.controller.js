@@ -389,7 +389,8 @@ async function getViolationSummary(req, res) {
   }
 }
 
-/**************************************trip reports summary******************************************/
+/***********************************trip reports summary****************************************/
+
 async function getTotalTripViolationSummary(req, res) {
   const { from, to } = req.query;
 
@@ -970,6 +971,510 @@ async function getDOWiseTripSummary(req, res) {
   }
 }
 
+async function getLatestVehicleWiseTripSummary(req, res) {
+  const { limit = 1000 } = req.query;
+
+  try {
+    const dbResponse = await dbInstanceRFID.query(
+      `
+      WITH LatestTrips AS (
+        SELECT TOP :limit
+          r.V_NO AS Vehicle_Number,
+          s.DO_NO AS DO_Number,
+          s.UNIT AS Unit_Code,
+          s.AREA_CODE AS Src_Area_Code,
+          s.SRC_WB AS Src_WB_Code,
+          s.SRC_UNIT AS Src_Unit_Code,
+          r.DEST_AREA AS Dest_Area_Code,
+          r.DEST_WB AS Dest_WB_Code,
+          r.DEST_UNIT AS Dest_Unit_Code,
+          DATEDIFF(SECOND, 
+            CAST(CONCAT(s.DATE_OUT,' ', s.TIME_OUT) AS datetime2),
+            CAST(CONCAT(r.DATE_IN, ' ', r.TIME_IN) AS datetime2)
+          ) AS Trip_Seconds
+        FROM dbo.special25 r WITH (NOLOCK)
+        INNER JOIN dbo.special25 s WITH (NOLOCK)
+          ON s.SL_NO = r.SRC_SLNO
+        WHERE
+          r.W_TYPE = 'J'
+          AND r.SRC_SLNO IS NOT NULL
+          AND r.SRC_SLNO <> ''
+          AND s.DATE_OUT IS NOT NULL 
+          AND s.TIME_OUT IS NOT NULL
+          AND r.DATE_IN IS NOT NULL 
+          AND r.TIME_IN IS NOT NULL
+        ORDER BY r.DATE_IN DESC, r.TIME_IN DESC
+      ),
+      TripDataFiltered AS (
+        SELECT 
+          Vehicle_Number,
+          DO_Number,
+          Unit_Code,
+          Src_Area_Code,
+          Src_WB_Code,
+          Src_Unit_Code,
+          Dest_Area_Code,
+          Dest_WB_Code,
+          Dest_Unit_Code,
+          Trip_Seconds
+        FROM LatestTrips
+        WHERE Trip_Seconds > 0
+      ),
+      DONumberedTrips AS (
+        SELECT
+          DO_Number,
+          Vehicle_Number,
+          Unit_Code,
+          Src_Area_Code,
+          Src_WB_Code,
+          Src_Unit_Code,
+          Dest_Area_Code,
+          Dest_WB_Code,
+          Dest_Unit_Code,
+          Trip_Seconds,
+          ROW_NUMBER() OVER (PARTITION BY DO_Number ORDER BY Trip_Seconds) AS RowNum,
+          COUNT(*) OVER (PARTITION BY DO_Number) AS DOTotalCount
+        FROM TripDataFiltered
+      ),
+      DOQuartiles AS (
+        SELECT
+          DO_Number,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.25) THEN Trip_Seconds END) AS Q1,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.75) THEN Trip_Seconds END) AS Q3
+        FROM DONumberedTrips
+        GROUP BY DO_Number
+      ),
+      DOIQRBounds AS (
+        SELECT
+          DO_Number,
+          (Q1 - 1.5 * (Q3 - Q1)) AS Lower_Bound,
+          (Q3 + 1.5 * (Q3 - Q1)) AS Upper_Bound
+        FROM DOQuartiles
+      ),
+      ViolationFlags AS (
+        SELECT
+          t.Vehicle_Number,
+          t.DO_Number,
+          t.Unit_Code,
+          t.Src_Area_Code,
+          t.Src_WB_Code,
+          t.Src_Unit_Code,
+          t.Dest_Area_Code,
+          t.Dest_WB_Code,
+          t.Dest_Unit_Code,
+          CASE 
+            WHEN t.Trip_Seconds < b.Lower_Bound OR t.Trip_Seconds > b.Upper_Bound
+            THEN 1
+            ELSE 0 
+          END AS Is_Violation
+        FROM TripDataFiltered t
+        INNER JOIN DOIQRBounds b ON t.DO_Number = b.DO_Number
+      ),
+      VehicleAggregates AS (
+        SELECT
+          v.Vehicle_Number,
+          MIN(v.DO_Number) AS DO_Number,
+          MIN(v.Unit_Code) AS Unit_Code,
+          MIN(v.Src_Area_Code) AS Src_Area_Code,
+          MIN(v.Src_WB_Code) AS Src_WB_Code,
+          MIN(v.Src_Unit_Code) AS Src_Unit_Code,
+          MIN(v.Dest_Area_Code) AS Dest_Area_Code,
+          MIN(v.Dest_WB_Code) AS Dest_WB_Code,
+          MIN(v.Dest_Unit_Code) AS Dest_Unit_Code,
+          SUM(Is_Violation) AS Total_Violations
+        FROM ViolationFlags v
+        WHERE Is_Violation = 1
+        GROUP BY v.Vehicle_Number
+      )
+      SELECT TOP 5
+        va.Vehicle_Number,
+        va.DO_Number,
+        CONCAT(va.Unit_Code, ' - ', ISNULL(u.unitname, 'Unknown')) AS Unit,
+        CONCAT(va.Src_Area_Code, ' - ', ISNULL(sa.areaname, 'Unknown')) AS Source_Area,
+        va.Src_WB_Code AS Source_Weighbridge,
+        CONCAT(va.Src_Unit_Code, ' - ', ISNULL(su.unitname, 'Unknown')) AS Source_Unit,
+        CONCAT(va.Dest_Area_Code, ' - ', ISNULL(da.areaname, 'Unknown')) AS Destination_Area,
+        va.Dest_WB_Code AS Destination_Weighbridge,
+        CONCAT(va.Dest_Unit_Code, ' - ', ISNULL(du.unitname, 'Unknown')) AS Destination_Unit,
+        va.Total_Violations
+      FROM VehicleAggregates va
+      LEFT JOIN dbo.units u ON va.Unit_Code = u.unitcode
+      LEFT JOIN dbo.areas sa ON va.Src_Area_Code = sa.areacode
+      LEFT JOIN dbo.units su ON va.Src_Unit_Code = su.unitcode
+      LEFT JOIN dbo.areas da ON va.Dest_Area_Code = da.areacode
+      LEFT JOIN dbo.units du ON va.Dest_Unit_Code = du.unitcode
+      ORDER BY va.Total_Violations DESC
+      OPTION (MAXDOP 4);
+      `,
+      {
+        replacements: { limit: parseInt(limit) },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
+
+    if (!dbResponse || dbResponse.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No vehicle violations found for the specified date range",
+      });
+    }
+
+    console.log(
+      `Fetched ${dbResponse.length} vehicle-wise trip records from database`
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: dbResponse.length,
+      data: dbResponse,
+    });
+  } catch (error) {
+    console.error("Error fetching vehicle-wise trip summary:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+async function getLatestDOWiseTripSummary(req, res) {
+  const { limit = 1000 } = req.query;
+
+  try {
+    const dbResponse = await dbInstanceRFID.query(
+      `
+      WITH LatestTrips AS (
+        SELECT TOP :limit
+          r.V_NO AS Vehicle_Number,
+          s.DO_NO AS DO_Number,
+          s.UNIT AS Unit_Code,
+          s.AREA_CODE AS Src_Area_Code,
+          s.SRC_WB AS Src_WB_Code,
+          s.SRC_UNIT AS Src_Unit_Code,
+          r.DEST_AREA AS Dest_Area_Code,
+          r.DEST_WB AS Dest_WB_Code,
+          r.DEST_UNIT AS Dest_Unit_Code,
+          DATEDIFF(SECOND, 
+            CAST(CONCAT(s.DATE_OUT,' ', s.TIME_OUT) AS datetime2),
+            CAST(CONCAT(r.DATE_IN, ' ', r.TIME_IN) AS datetime2)
+          ) AS Trip_Seconds
+        FROM dbo.special25 r WITH (NOLOCK)
+        INNER JOIN dbo.special25 s WITH (NOLOCK)
+          ON s.SL_NO = r.SRC_SLNO
+        WHERE
+          r.W_TYPE = 'J'
+          AND r.SRC_SLNO IS NOT NULL
+          AND r.SRC_SLNO <> ''
+          AND s.DATE_OUT IS NOT NULL 
+          AND s.TIME_OUT IS NOT NULL
+          AND r.DATE_IN IS NOT NULL 
+          AND r.TIME_IN IS NOT NULL
+        ORDER BY r.DATE_IN DESC, r.TIME_IN DESC
+      ),
+      TripDataFiltered AS (
+        SELECT 
+          Vehicle_Number,
+          DO_Number,
+          Unit_Code,
+          Src_Area_Code,
+          Src_WB_Code,
+          Src_Unit_Code,
+          Dest_Area_Code,
+          Dest_WB_Code,
+          Dest_Unit_Code,
+          Trip_Seconds
+        FROM LatestTrips
+        WHERE Trip_Seconds > 0
+      ),
+      DONumberedTrips AS (
+        SELECT
+          DO_Number,
+          Vehicle_Number,
+          Unit_Code,
+          Src_Area_Code,
+          Src_WB_Code,
+          Src_Unit_Code,
+          Dest_Area_Code,
+          Dest_WB_Code,
+          Dest_Unit_Code,
+          Trip_Seconds,
+          ROW_NUMBER() OVER (PARTITION BY DO_Number ORDER BY Trip_Seconds) AS RowNum,
+          COUNT(*) OVER (PARTITION BY DO_Number) AS DOTotalCount
+        FROM TripDataFiltered
+      ),
+      DOQuartiles AS (
+        SELECT
+          DO_Number,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.25) THEN Trip_Seconds END) AS Q1,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.75) THEN Trip_Seconds END) AS Q3
+        FROM DONumberedTrips
+        GROUP BY DO_Number
+      ),
+      DOIQRBounds AS (
+        SELECT
+          DO_Number,
+          (Q1 - 1.5 * (Q3 - Q1)) AS Lower_Bound,
+          (Q3 + 1.5 * (Q3 - Q1)) AS Upper_Bound
+        FROM DOQuartiles
+      ),
+      ViolationFlags AS (
+        SELECT
+          t.DO_Number,
+          t.Vehicle_Number,
+          t.Unit_Code,
+          t.Src_Area_Code,
+          t.Src_WB_Code,
+          t.Src_Unit_Code,
+          t.Dest_Area_Code,
+          t.Dest_WB_Code,
+          t.Dest_Unit_Code,
+          t.Trip_Seconds,
+          b.Lower_Bound,
+          b.Upper_Bound,
+          CASE 
+            WHEN t.Trip_Seconds < b.Lower_Bound OR t.Trip_Seconds > b.Upper_Bound
+            THEN 1
+            ELSE 0 
+          END AS Is_Violation
+        FROM TripDataFiltered t
+        INNER JOIN DOIQRBounds b ON t.DO_Number = b.DO_Number
+      ),
+      DOAggregates AS (
+        SELECT
+          v.DO_Number,
+          MAX(CONCAT(v.Unit_Code, ' - ', ISNULL(u.unitname, 'Unknown'))) AS Unit,
+          MAX(CONCAT(v.Src_Area_Code, ' - ', ISNULL(sa.areaname, 'Unknown'))) AS Source_Area,
+          MAX(v.Src_WB_Code) AS Source_Weighbridge,
+          MAX(CONCAT(v.Src_Unit_Code, ' - ', ISNULL(su.unitname, 'Unknown'))) AS Source_Unit,
+          MAX(CONCAT(v.Dest_Area_Code, ' - ', ISNULL(da.areaname, 'Unknown'))) AS Destination_Area,
+          MAX(v.Dest_WB_Code) AS Destination_Weighbridge,
+          MAX(CONCAT(v.Dest_Unit_Code, ' - ', ISNULL(du.unitname, 'Unknown'))) AS Destination_Unit,
+          SUM(Is_Violation) AS Total_Violations,
+          COUNT(DISTINCT CASE WHEN Is_Violation = 1 THEN Vehicle_Number END) AS Unique_Vehicle_Count,
+          MIN(CASE WHEN Is_Violation = 1 THEN Trip_Seconds END) AS Min_Violation_Seconds,
+          MAX(CASE WHEN Is_Violation = 1 THEN Trip_Seconds END) AS Max_Violation_Seconds,
+          AVG(CASE WHEN Is_Violation = 1 THEN CAST(Trip_Seconds AS FLOAT) END) AS Avg_Violation_Seconds,
+          MAX(Lower_Bound) AS IQR_Lower_Bound,
+          MAX(Upper_Bound) AS IQR_Upper_Bound
+        FROM ViolationFlags v
+        LEFT JOIN dbo.units u ON v.Unit_Code = u.unitcode
+        LEFT JOIN dbo.areas sa ON v.Src_Area_Code = sa.areacode
+        LEFT JOIN dbo.units su ON v.Src_Unit_Code = su.unitcode
+        LEFT JOIN dbo.areas da ON v.Dest_Area_Code = da.areacode
+        LEFT JOIN dbo.units du ON v.Dest_Unit_Code = du.unitcode
+        GROUP BY v.DO_Number
+        HAVING SUM(Is_Violation) > 0
+      )
+      SELECT TOP 5
+        DO_Number,
+        Unit,
+        Source_Area,
+        Source_Weighbridge,
+        Source_Unit,
+        Destination_Area,
+        Destination_Weighbridge,
+        Destination_Unit,
+        Total_Violations,
+        Unique_Vehicle_Count,
+        CONCAT(
+          Min_Violation_Seconds / 3600, ':',
+          RIGHT('0' + CAST((Min_Violation_Seconds % 3600) / 60 AS VARCHAR), 2), ':',
+          RIGHT('0' + CAST(Min_Violation_Seconds % 60 AS VARCHAR), 2)
+        ) AS Min_Trip_Time,
+        CONCAT(
+          Max_Violation_Seconds / 3600, ':',
+          RIGHT('0' + CAST((Max_Violation_Seconds % 3600) / 60 AS VARCHAR), 2), ':',
+          RIGHT('0' + CAST(Max_Violation_Seconds % 60 AS VARCHAR), 2)
+        ) AS Max_Trip_Time,
+        CONCAT(
+          CAST(Avg_Violation_Seconds AS INT) / 3600, ':',
+          RIGHT('0' + CAST((CAST(Avg_Violation_Seconds AS INT) % 3600) / 60 AS VARCHAR), 2), ':',
+          RIGHT('0' + CAST(CAST(Avg_Violation_Seconds AS INT) % 60 AS VARCHAR), 2)
+        ) AS Avg_Violation_Trip_Time,
+        CONCAT(
+          IQR_Lower_Bound / 3600, ':',
+          RIGHT('0' + CAST((IQR_Lower_Bound % 3600) / 60 AS VARCHAR), 2), ':',
+          RIGHT('0' + CAST(IQR_Lower_Bound % 60 AS VARCHAR), 2)
+        ) AS IQR_Low,
+        CONCAT(
+          IQR_Upper_Bound / 3600, ':',
+          RIGHT('0' + CAST((IQR_Upper_Bound % 3600) / 60 AS VARCHAR), 2), ':',
+          RIGHT('0' + CAST(IQR_Upper_Bound % 60 AS VARCHAR), 2)
+        ) AS IQR_High
+      FROM DOAggregates
+      ORDER BY Total_Violations DESC
+      OPTION (MAXDOP 4);
+      `,
+      {
+        replacements: { limit: parseInt(limit) },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
+
+    if (!dbResponse || dbResponse.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No DO violations found for the specified date range",
+      });
+    }
+
+    console.log(
+      `Fetched ${dbResponse.length} DO-wise trip records from database`
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: dbResponse.length,
+      data: dbResponse,
+    });
+  } catch (error) {
+    console.error("Error fetching DO-wise trip summary:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+async function getLatestTotalTripViolationSummary(req, res) {
+  const { limit = 1000 } = req.query;
+
+  try {
+    const dbResponse = await dbInstanceRFID.query(
+      `
+      WITH LatestTrips AS (
+        SELECT TOP :limit
+          r.V_NO AS Vehicle_Number,
+          s.DO_NO AS DO_Number,
+          s.UNIT AS Unit_Code,
+          DATEDIFF(SECOND, 
+            CAST(CONCAT(s.DATE_OUT,' ', s.TIME_OUT) AS datetime2),
+            CAST(CONCAT(r.DATE_IN, ' ', r.TIME_IN) AS datetime2)
+          ) AS Trip_Seconds
+        FROM dbo.special25 r WITH (NOLOCK)
+        INNER JOIN dbo.special25 s WITH (NOLOCK)
+          ON s.SL_NO = r.SRC_SLNO
+        WHERE
+          r.W_TYPE = 'J'
+          AND r.SRC_SLNO IS NOT NULL
+          AND r.SRC_SLNO <> ''
+          AND s.DATE_OUT IS NOT NULL 
+          AND s.TIME_OUT IS NOT NULL
+          AND r.DATE_IN IS NOT NULL 
+          AND r.TIME_IN IS NOT NULL
+        ORDER BY r.DATE_IN DESC, r.TIME_IN DESC
+      ),
+      TripDataFiltered AS (
+        SELECT 
+          Vehicle_Number,
+          DO_Number,
+          Unit_Code,
+          Trip_Seconds
+        FROM LatestTrips
+        WHERE Trip_Seconds > 0
+      ),
+      TotalCounts AS (
+        SELECT
+          COUNT(*) AS Total_Trips,
+          COUNT(DISTINCT Vehicle_Number) AS Total_Unique_Vehicles,
+          COUNT(DISTINCT DO_Number) AS Total_Unique_DOs,
+          COUNT(DISTINCT Unit_Code) AS Total_Unique_Units
+        FROM TripDataFiltered
+      ),
+      DONumberedTrips AS (
+        SELECT
+          DO_Number,
+          Vehicle_Number,
+          Unit_Code,
+          Trip_Seconds,
+          ROW_NUMBER() OVER (PARTITION BY DO_Number ORDER BY Trip_Seconds) AS RowNum,
+          COUNT(*) OVER (PARTITION BY DO_Number) AS DOTotalCount
+        FROM TripDataFiltered
+      ),
+      DOQuartiles AS (
+        SELECT
+          DO_Number,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.25) THEN Trip_Seconds END) AS Q1,
+          MAX(CASE WHEN RowNum = CEILING(DOTotalCount * 0.75) THEN Trip_Seconds END) AS Q3
+        FROM DONumberedTrips
+        GROUP BY DO_Number
+      ),
+      DOIQRBounds AS (
+        SELECT
+          DO_Number,
+          (Q1 - 1.5 * (Q3 - Q1)) AS Lower_Bound,
+          (Q3 + 1.5 * (Q3 - Q1)) AS Upper_Bound
+        FROM DOQuartiles
+      ),
+      ViolationCounts AS (
+        SELECT
+          COUNT(*) AS Total_Violations,
+          COUNT(DISTINCT t.Vehicle_Number) AS Violation_Unique_Vehicles,
+          COUNT(DISTINCT t.DO_Number) AS Violation_Unique_DOs,
+          COUNT(DISTINCT t.Unit_Code) AS Violation_Unique_Units
+        FROM TripDataFiltered t
+        INNER JOIN DOIQRBounds b ON t.DO_Number = b.DO_Number
+        WHERE t.Trip_Seconds < b.Lower_Bound 
+           OR t.Trip_Seconds > b.Upper_Bound
+      )
+      SELECT 
+        tc.Total_Trips,
+        ISNULL(vc.Total_Violations, 0) AS Total_Violations,
+        (tc.Total_Trips - ISNULL(vc.Total_Violations, 0)) AS Normal_Trips,
+        CASE 
+          WHEN tc.Total_Trips > 0 
+          THEN CAST(ROUND((ISNULL(vc.Total_Violations, 0) * 100.0 / tc.Total_Trips), 2) AS DECIMAL(5,2))
+          ELSE 0 
+        END AS Violation_Percentage,
+        tc.Total_Unique_Vehicles AS Total_Unique_Vehicles,
+        ISNULL(vc.Violation_Unique_Vehicles, 0) AS Vehicles_With_Violations,
+        tc.Total_Unique_DOs AS Total_Unique_DOs,
+        ISNULL(vc.Violation_Unique_DOs, 0) AS DOs_With_Violations,
+        tc.Total_Unique_Units AS Total_Unique_Units,
+        ISNULL(vc.Violation_Unique_Units, 0) AS Units_With_Violations
+      FROM TotalCounts tc
+      CROSS JOIN ViolationCounts vc
+      OPTION (MAXDOP 4);
+      `,
+      {
+        replacements: { limit: parseInt(limit) },
+        type: dbInstanceRFID.QueryTypes.SELECT,
+      }
+    );
+
+    if (!dbResponse || dbResponse.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          Total_Trips: 0,
+          Total_Violations: 0,
+          Normal_Trips: 0,
+          Violation_Percentage: 0,
+          Total_Unique_Vehicles: 0,
+          Vehicles_With_Violations: 0,
+          Total_Unique_DOs: 0,
+          DOs_With_Violations: 0,
+          Total_Unique_Units: 0,
+          Units_With_Violations: 0
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: dbResponse[0]
+    });
+  } catch (error) {
+    console.error("Error fetching total trip violation summary:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
 export {
   getVehicleWiseSummary,
   getWeighbridgeWiseSummary,
@@ -979,4 +1484,7 @@ export {
   getDateRanges,
   getVehicleWiseTripSummary,
   getDOWiseTripSummary,
+  getLatestVehicleWiseTripSummary,
+  getLatestDOWiseTripSummary,
+  getLatestTotalTripViolationSummary
 };
