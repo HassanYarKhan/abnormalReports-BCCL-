@@ -44,14 +44,14 @@ async function getWBfromUnitCode(req, res) {
 
   try {
     const dbResponse = await dbInstanceRFID.query(
-      `SELECT wbcode, wbname FROM wbs WHERE unitCode = '${unitCode}' AND loctype = 'W'`,
+      `SELECT wbcode, wbname FROM wbs WHERE unitCode like '%${unitCode}%' AND loctype = 'W'`,
       {
         type: dbInstanceRFID.QueryTypes.SELECT,
       }
     );
 
     if(dbResponse.length === 0){
-        res.status(200).json({message: 'No registered weighbrodges in this unit code'});
+        res.status(200).json({message: 'No registered weighbridges in this unit code'});
     }
 
     res.status(200).json({message: `Fetched weigbridges for unit code ${unitCode}`, weighbridges: dbResponse});

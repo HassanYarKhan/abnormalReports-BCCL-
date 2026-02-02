@@ -165,7 +165,7 @@ async function searchTripReports() {
 
   try {
     const response = await fetch(
-      `${serverURL}/api/reports/getTripTimeReportsByDONumber`,
+      `${serverURL}/api/reports/getTripTimeReportsByUnitCode`,
       {
         method: "POST",
         headers: {

@@ -391,7 +391,7 @@
                 switch(summaryType) {
                     case 'daily':
                         sectionId = 'dailySummary';
-                        titleSuffix = 'Daily Summary';
+                        titleSuffix = 'Recent Trips Summary';
                         break;
                     case 'weekly':
                         sectionId = 'weeklySummary';

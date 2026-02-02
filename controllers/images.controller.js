@@ -7,7 +7,7 @@ const IMAGE_BASE_DIR = path.resolve(process.env.IMG_PATH);
 async function getAbnormalWeighmentImg(req, res) {
   const { slNo, weightType } = req.query;
 
-  if (!slNo || !weightType) {
+  if (!slNo || !weightType) { 
     return res.status(400).json({
       success: false,
       message: "slNo and weightType are required"
@@ -68,8 +68,8 @@ async function getAbnormalWeighmentImg(req, res) {
       fs.existsSync(path.join(IMAGE_BASE_DIR, fileName))
     )
     .map(fileName =>
-      // `${SERVER_URL}/anprimages/wbdata/${fileName}`
-      `${SERVER_URL}/images/${fileName}`
+      `${SERVER_URL}/anprimages/wbdata/${fileName}`
+      // `${SERVER_URL}/images/${fileName}`
     );
   return res.status(200).json({
     slNo,

@@ -816,7 +816,7 @@ async function getReportsByAreaId(req, res) {
 
 /******************************************TRIP TIME REPORTS**************************************/
 
-async function getTripTimeReportsByDONumber(req, res) {
+async function getTripTimeReportsByUnitCode(req, res) {
   const { unitCode, from, to } = req.body;
 
   // Validate required parameters
@@ -986,5 +986,5 @@ export {
   getReportsForPresentDay,
   getReportsByWBCode,
   getReportsByAreaId,
-  getTripTimeReportsByDONumber,
+  getTripTimeReportsByUnitCode,
 };

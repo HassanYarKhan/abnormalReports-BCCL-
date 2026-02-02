@@ -331,7 +331,7 @@ const tripReportsSummary = {
   // Render daily summary section
   renderDailySummary(section, data) {
     this.currentDateRange = data.dateRange;
-    this.renderSummarySection(section, data, "Daily Summary");
+    this.renderSummarySection(section, data, "Recent Trips Summary");
   },
 
   // Render weekly summary section
@@ -857,7 +857,7 @@ const tripReportsSummary = {
       console.log("API Request Body:", requestBody);
 
       const response = await fetch(
-        `${serverURL}/api/reports/getTripTimeReportsByDONumber`,
+        `${serverURL}/api/reports/getTripTimeReportsByUnitCode`,
         {
           method: "POST",
           headers: {
@@ -1005,7 +1005,7 @@ const tripReportsSummary = {
 
       // Fetch data from backend
       const response = await fetch(
-        `${serverURL}/api/reports/getTripTimeReportsByDONumber`,
+        `${serverURL}/api/reports/getTripTimeReportsByUnitCode`,
         {
           method: "POST",
           headers: {

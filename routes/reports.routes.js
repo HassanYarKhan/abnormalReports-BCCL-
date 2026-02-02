@@ -1,5 +1,5 @@
 import Router from "express";
-import {getReportsByVehicleNumber, getReportsForPresentDay, getReportsByWBCode, getReportsByAreaId, getTripTimeReportsByDONumber} from "../controllers/reports.controller.js";
+import {getReportsByVehicleNumber, getReportsForPresentDay, getReportsByWBCode, getReportsByAreaId, getTripTimeReportsByUnitCode} from "../controllers/reports.controller.js";
 
 const reportsRouter = Router();
 
@@ -7,5 +7,5 @@ reportsRouter.post("/getReportsByVehicleNumber", getReportsByVehicleNumber);
 reportsRouter.get("/getReportsForPresentDay", getReportsForPresentDay);
 reportsRouter.post("/getReportsByWBCode", getReportsByWBCode);
 reportsRouter.get("/getReportsByAreaId", getReportsByAreaId);
-reportsRouter.post("/getTripTimeReportsByDONumber", getTripTimeReportsByDONumber);
+reportsRouter.post("/getTripTimeReportsByUnitCode", getTripTimeReportsByUnitCode);
 export default reportsRouter;
